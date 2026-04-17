@@ -1,6 +1,9 @@
 package venda.p2.dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import venda.p2.model.Venda;
@@ -31,23 +34,26 @@ public class VendaDAO {
     }
 
     public boolean verificaQtdeVendas(int clienteId) {
-        try {
-            conn = Conexao.getConnection();
-            System.out.println("Conectado com sucesso!");
-            Statement stmt = conn.createStatement();
-            int qtdeVendas = stmt.executeUpdate("SELECT COUNT(*) FROM venda WHERE cliente_id = " + clienteId);
-            stmt.close();
-            if (qtdeVendas < 3) {
-                return true;
-            } else { 
-                return false;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            Conexao.fecharConexao();
+    // Use PreparedStatement para evitar erros de sintaxe e SQL Injection
+    String sql = "SELECT COUNT(*) FROM venda WHERE cliente_id = ?";
+    
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, clienteId);
+        
+        // MUDANÇA ESSENCIAL: executeQuery() em vez de executeUpdate()
+        ResultSet rs = stmt.executeQuery(); 
+        
+        if (rs.next()) {
+            int totalVendas = rs.getInt(1);
+            return totalVendas < 3; // Retorna true se puder vender
         }
+        
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return false;
+}
 
 }

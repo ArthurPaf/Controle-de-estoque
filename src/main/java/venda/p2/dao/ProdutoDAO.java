@@ -14,23 +14,18 @@ public class ProdutoDAO {
     public Produto pesquisar(int idProduto) {
         try {
             conn = Conexao.getConnection();
-            System.out.println("Conectado com sucesso!");
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * from produto where id = " + idProduto);
+            // CORREÇÃO: nomes das colunas conforme o banco
+            ResultSet rs = stmt.executeQuery("SELECT id, nome, preco_medio, qtde_estoque FROM produto WHERE id = " + idProduto);
             if (rs.next()) {
                 Produto produto = new Produto();
-                produto.setId(rs.getInt(1));
-                produto.setNome(rs.getString(2));
-                produto.setPreco(rs.getDouble(3));
-                produto.setQuantidade(rs.getDouble(4));
-                rs.close();
-                stmt.close();
+                produto.setId(rs.getInt("id"));
+                produto.setNome(rs.getString("nome"));
+                produto.setPreco(rs.getDouble("preco_medio"));
+                produto.setQuantidade(rs.getDouble("qtde_estoque"));
                 return produto;
-            } else {
-                rs.close();
-                stmt.close();
-                return null;
             }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -68,17 +63,17 @@ public class ProdutoDAO {
     public boolean salvar(Produto produto) {
         try {
             conn = Conexao.getConnection();
-            System.out.println("Conectado com sucesso!");
             Statement stmt = conn.createStatement();
-            int qtdeLinhas = stmt.executeUpdate("insert into produto (nome, preco, quantidade) values ('"
-                    + produto.getNome() + "', " + produto.getPreco()
-                    + ", " + produto.getQuantidade() + ")");
-            stmt.close();
-            if (qtdeLinhas > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            // CORREÇÃO: Adicionado categoria_id no INSERT
+            String sql = "INSERT INTO produto (id, nome, preco_medio, qtde_estoque, categoria_id) VALUES ("
+                    + produto.getId() + ", '" 
+                    + produto.getNome() + "', " 
+                    + produto.getPreco() + ", " 
+                    + produto.getQuantidade() + ", " 
+                    + produto.getCategoria().getId() + ")";
+            
+            int qtdeLinhas = stmt.executeUpdate(sql);
+            return qtdeLinhas > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -90,17 +85,15 @@ public class ProdutoDAO {
     public boolean alterar(Produto produto) {
         try {
             conn = Conexao.getConnection();
-            System.out.println("Conectado com sucesso!");
             Statement stmt = conn.createStatement();
-            int qtdeLinhas = stmt.executeUpdate("update produto set nome = '" + produto.getNome()
-                    + "', preco = " + produto.getPreco() + ", quantidade = " + produto.getQuantidade()
-                    + " where id = " + produto.getId());
-            stmt.close();
-            if (qtdeLinhas > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            // CORREÇÃO: nomes das colunas ajustados para preco_medio e qtde_estoque
+            String sql = "UPDATE produto SET nome = '" + produto.getNome()
+                    + "', preco_medio = " + produto.getPreco() 
+                    + ", qtde_estoque = " + produto.getQuantidade()
+                    + " WHERE id = " + produto.getId();
+            
+            int qtdeLinhas = stmt.executeUpdate(sql);
+            return qtdeLinhas > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -131,9 +124,7 @@ public class ProdutoDAO {
 
     public boolean atualizarEstoque(Produto produto, int quantidade) {
         Produto produtoExistente = pesquisar(produto.getId());
-        if (produtoExistente == null) {
-            return false;
-        }
+        if (produtoExistente == null) return false;
 
         double novaQuantidade = produtoExistente.getQuantidade() - quantidade;
         produto.setQuantidade(novaQuantidade);

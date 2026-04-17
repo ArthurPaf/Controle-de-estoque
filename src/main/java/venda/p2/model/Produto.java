@@ -3,8 +3,10 @@ package venda.p2.model;
 public class Produto {
     private int id;
     private String nome;
-    private Double preco;
-    private Double quantidade;
+    private Double preco_medio;
+    private Double qtde_estoque;
+    private Double valor_ultima_compra;
+    private Double valor_ultima_venda;
     private Categoria categoria;
 
     /**
@@ -20,27 +22,15 @@ public class Produto {
      * @param quantidade
      * @param categoria
      */
-    public Produto(int id, String nome, Double preco, Double quantidade, Categoria categoria) {
+    public Produto(int id, String nome, Double preco_medio, Double qtde_estoque, Categoria categoria) {
         this.id = id;
         this.nome = nome;
-        this.preco = preco;
-        this.quantidade = quantidade;
+        this.preco_medio = preco_medio;
+        this.qtde_estoque = qtde_estoque;
         this.categoria = categoria;
     }
 
-    /**
-     * @return the categoria
-     */
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    /**
-     * @param categoria the categoria to set
-     */
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
+   
 
     /**
      * @return the id
@@ -74,28 +64,51 @@ public class Produto {
      * @return the preco
      */
     public Double getPreco() {
-        return preco;
+        return preco_medio;
     }
 
     /**
      * @param preco the preco to set
      */
     public void setPreco(Double preco) {
-        this.preco = preco;
+        this.preco_medio = preco;
     }
 
     /**
      * @return the quantidade
      */
     public Double getQuantidade() {
-        return quantidade;
+        return qtde_estoque;
     }
 
     /**
      * @param quantidade the quantidade to set
      */
     public void setQuantidade(Double quantidade) {
-        this.quantidade = quantidade;
+        this.qtde_estoque = quantidade;
     }
 
+    public Double getValor_ultima_compra() {
+        return valor_ultima_compra;
+    }
+
+    public void setValor_ultima_compra(Double valor_ultima_compra) {
+        this.valor_ultima_compra = valor_ultima_compra;
+    }
+
+    public Double getValor_ultima_venda() {
+        return valor_ultima_venda;
+    }
+
+    public void setValor_ultima_venda(Double valor_ultima_venda) {
+        this.valor_ultima_venda = valor_ultima_venda;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
 }
