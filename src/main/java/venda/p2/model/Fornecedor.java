@@ -2,8 +2,8 @@ package venda.p2.model;
 
 public class Fornecedor {
     private int id;
-    private String nome_Fantasia;
-    private String razao_Social;
+    private String nome_fantasia;
+    private String razao_social;
     private String cnpj;
 
     /**
@@ -20,8 +20,8 @@ public class Fornecedor {
      */
     public Fornecedor(int id, String nomeFantasia, String razaoSocial, String cnpj) {
         this.id = id;
-        this.nome_Fantasia = nomeFantasia;
-        this.razao_Social = razaoSocial;
+        this.nome_fantasia = nomeFantasia;
+        this.razao_social = razaoSocial;
         this.cnpj = cnpj;
     }
 
@@ -43,28 +43,28 @@ public class Fornecedor {
      * @return the nomeFantasia
      */
     public String getNomeFantasia() {
-        return nome_Fantasia;
+        return nome_fantasia;
     }
 
     /**
      * @param nomeFantasia the nomeFantasia to set
      */
     public void setNomeFantasia(String nomeFantasia) {
-        this.nome_Fantasia = nomeFantasia;
+        this.nome_fantasia = nomeFantasia;
     }
 
     /**
      * @return the razaoSocial
      */
     public String getRazaoSocial() {
-        return razao_Social;
+        return razao_social;
     }
 
     /**
      * @param razaoSocial the razaoSocial to set
      */
     public void setRazaoSocial(String razaoSocial) {
-        this.razao_Social = razaoSocial;
+        this.razao_social = razaoSocial;
     }
 
     /**

@@ -7,7 +7,7 @@ public class Compra {
     private int id;
     private LocalDate dataCompra;
     private Double valorTotal;
-    private List<CompraProduto> CompraProdutos;
+    private List<CompraProduto> compraProdutos;
     private Fornecedor fornecedor;
 
     /**
@@ -77,14 +77,14 @@ public class Compra {
      * @return the CompraProdutos
      */
     public List<CompraProduto> getCompraProdutos() {
-        return CompraProdutos;
+        return compraProdutos;
     }
 
     /**
-     * @param CompraProdutos the CompraProdutos to set
+     * @param compraProdutos the compraProdutos to set
      */
-    public void setCompraProdutos(List<CompraProduto> CompraProdutos) {
-        this.CompraProdutos = CompraProdutos;
+    public void setCompraProdutos(List<CompraProduto> compraProdutos) {
+        this.compraProdutos = compraProdutos;
     }
 
     public Fornecedor getFornecedor() {

@@ -2,9 +2,9 @@ package venda.p2.model;
 
 public class CompraProduto {
     private int id;
-    private Compra Compra;
+    private Compra compra;
     private Produto produto;
-    private int quantidade;
+    private Double quantidade;
     private Double valorUnitario;
 
     /**
@@ -20,9 +20,9 @@ public class CompraProduto {
      * @param quantidade
      * @param valorUnitario
      */
-    public CompraProduto(int id, Compra Compra, Produto produto, int quantidade, Double valorUnitario) {
+    public CompraProduto(int id, Compra compra, Produto produto, Double quantidade, Double valorUnitario) {
         this.id = id;
-        this.Compra = Compra;
+        this.compra = compra;
         this.produto = produto;
         this.quantidade = quantidade;
         this.valorUnitario = valorUnitario;
@@ -46,14 +46,14 @@ public class CompraProduto {
      * @return the Compra
      */
     public Compra getCompra() {
-        return Compra;
+        return compra;
     }
 
     /**
-     * @param Compra the Compra to set
+     * @param compra the Compra to set
      */
-    public void setCompra(Compra Compra) {
-        this.Compra = Compra;
+    public void setCompra(Compra compra) {
+        this.compra = compra;
     }
 
     /**
@@ -73,14 +73,14 @@ public class CompraProduto {
     /**
      * @return the quantidade
      */
-    public int getQuantidade() {
+    public Double getQuantidade() {
         return quantidade;
     }
 
     /**
      * @param quantidade the quantidade to set
      */
-    public void setQuantidade(int quantidade) {
+    public void setQuantidade(Double quantidade) {
         this.quantidade = quantidade;
     }
 

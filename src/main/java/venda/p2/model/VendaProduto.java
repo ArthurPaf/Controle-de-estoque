@@ -4,7 +4,7 @@ public class VendaProduto {
     private int id;
     private Venda venda;
     private Produto produto;
-    private int quantidade;
+    private Double quantidade;
     private Double valorUnitario;
 
     /**
@@ -20,7 +20,7 @@ public class VendaProduto {
      * @param quantidade
      * @param valorUnitario
      */
-    public VendaProduto(int id, Venda venda, Produto produto, int quantidade, Double valorUnitario) {
+    public VendaProduto(int id, Venda venda, Produto produto, Double quantidade, Double valorUnitario) {
         this.id = id;
         this.venda = venda;
         this.produto = produto;
@@ -73,14 +73,14 @@ public class VendaProduto {
     /**
      * @return the quantidade
      */
-    public int getQuantidade() {
+    public Double getQuantidade() {
         return quantidade;
     }
 
     /**
      * @param quantidade the quantidade to set
      */
-    public void setQuantidade(int quantidade) {
+    public void setQuantidade(Double quantidade) {
         this.quantidade = quantidade;
     }
 
