@@ -45,10 +45,12 @@ public class VendaController {
         }
 
         // Finalmente, salva a venda e seus itens através do DAO limpo
-        if (vendaDAO.salvar(venda)) {
-            return "Venda realizada com sucesso!";
+        int idGerado = vendaDAO.salvar(venda); 
+
+        if (idGerado > 0) {
+            return "Venda #" + idGerado + " realizada com sucesso!";
         } else {
-            return "Erro ao salvar a venda no banco de dados.";
+            return "[!] Erro ao salvar a venda no banco de dados.";
         }
     }
 }

@@ -15,54 +15,69 @@ import venda.p2.model.Produto;
 public class CompraDAO {
     Connection conn = null;
 
-    public boolean salvar(Compra compra) {
+    public int salvar(Compra compra) {
     try {
         conn = Conexao.getConnection();
         conn.setAutoCommit(false); 
         
-        // 1. Inserimos a COMPRA sem passar o ID (deixamos o Serial do banco agir)
-        // Usamos RETURN_GENERATED_KEYS para o banco nos devolver o ID criado
+        // 1. Inserimos a COMPRA
         String sqlCompra = "INSERT INTO compra (fornecedor_id, data_compra, valor_total) VALUES (?, ?, ?)";
         PreparedStatement pstCompra = conn.prepareStatement(sqlCompra, Statement.RETURN_GENERATED_KEYS);
         
         pstCompra.setInt(1, compra.getFornecedor().getId());
         pstCompra.setDate(2, java.sql.Date.valueOf(compra.getDataCompra()));
         pstCompra.setDouble(3, compra.getValorTotal());
-        
         pstCompra.executeUpdate();
         
-        // Pega o ID que o Postgres acabou de criar para essa compra
         ResultSet rs = pstCompra.getGeneratedKeys();
         int idGerado = 0;
         if (rs.next()) {
             idGerado = rs.getInt(1);
         }
 
-        // 2. Insere os itens da compra_produto usando o ID gerado
+        // 2. SQLs com os nomes exatos das colunas do seu banco
         String sqlItem = "INSERT INTO compra_produto (compra_id, produto_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)";
-        PreparedStatement pstItem = conn.prepareStatement(sqlItem);
-
+        
+        // AJUSTE: qtde_estoque conforme você confirmou
+        String sqlUpdateProduto = "UPDATE produto SET qtde_estoque = qtde_estoque + ?, valor_ultima_compra = ?, preco_medio = ? WHERE id = ?";
+        
         for (CompraProduto item : compra.getCompraProdutos()) {
-            pstItem.setInt(1, idGerado); // Usa o ID que o banco criou agora pouco
+            // Salva item da compra (na tabela compra_produto a coluna é 'quantidade')
+            PreparedStatement pstItem = conn.prepareStatement(sqlItem);
+            pstItem.setInt(1, idGerado);
             pstItem.setInt(2, item.getProduto().getId());
             pstItem.setDouble(3, item.getQuantidade());
             pstItem.setDouble(4, item.getValorUnitario());
             pstItem.executeUpdate();
             
-            // DICA: Aproveite para atualizar o estoque do produto aqui!
-            // prodDAO.adicionarEstoque(item.getProduto().getId(), item.getQuantidade());
+            // Atualiza o produto (na tabela produto a coluna é 'qtde_estoque')
+            PreparedStatement pstProd = conn.prepareStatement(sqlUpdateProduto);
+            pstProd.setDouble(1, item.getQuantidade()); // RNF002: Soma ao estoque
+            pstProd.setDouble(2, item.getValorUnitario()); // RNF006: Última compra
+            
+            // RNF007: Pegamos o preço médio que o Controller calculou e guardou no objeto
+            pstProd.setDouble(3, item.getProduto().getPreco()); 
+            
+            pstProd.setInt(4, item.getProduto().getId());
+            pstProd.executeUpdate();
         }
         
         conn.commit();
-        return true;
+        return idGerado; 
         
     } catch (Exception e) {
-        try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
-        e.printStackTrace();
+        System.err.println(">>>> ERRO NO DAO AO SALVAR: " + e.getMessage());
+        try { 
+            if (conn != null) {
+                System.out.println(">>>> Executando Rollback...");
+                conn.rollback(); 
+            }
+        } catch (SQLException ex) { ex.printStackTrace(); }
+        e.printStackTrace(); 
+        return -1;
     } finally {
         Conexao.fecharConexao();
     }
-    return false;
 }
 
     public Compra pesquisar(int id) {
@@ -70,38 +85,46 @@ public class CompraDAO {
         conn = Conexao.getConnection();
         Statement stmt = conn.createStatement();
         
-        // Fazendo o JOIN triplo: Compra + Fornecedor + Produto
-        String sql = "SELECT cp.*, f.nome AS nome_fornecedor, p.nome AS nome_produto " +
-                     "FROM compra cp " +
-                     "INNER JOIN fornecedor f ON f.id = cp.fornecedor_id " +
+        // Usamos aliases claros: c (compra), cp (itens), f (fornecedor), p (produto)
+        String sql = "SELECT c.id, c.data_compra, c.valor_total, c.fornecedor_id, " +
+                     "cp.quantidade, cp.valor_unitario, cp.produto_id, " +
+                     "f.nome_fantasia AS nome_fornecedor, " +
+                     "p.nome AS nome_produto " +
+                     "FROM compra c " +
+                     "INNER JOIN compra_produto cp ON c.id = cp.compra_id " +
+                     "INNER JOIN fornecedor f ON f.id = c.fornecedor_id " +
                      "INNER JOIN produto p ON p.id = cp.produto_id " +
-                     "WHERE cp.id = " + id;
+                     "WHERE c.id = " + id;
         
         ResultSet rs = stmt.executeQuery(sql);
         
-        if (rs.next()) {
-            Compra c = new Compra();
-            CompraProduto cp = new CompraProduto(); // Associa a compra ao item 
-            c.setId(rs.getInt("id"));
-            c.setDataCompra(rs.getDate("data_compra").toLocalDate());
-            cp.setQuantidade(rs.getDouble("quantidade"));
-            cp.setValorUnitario(rs.getDouble("valor_unitario"));
-            c.setValorTotal(rs.getDouble("valor_total"));
+        Compra c = null;
 
-            // 1. Montando o objeto Fornecedor que veio do JOIN
-            Fornecedor forn = new Fornecedor();
-            forn.setId(rs.getInt("fornecedor_id"));
-            forn.setNomeFantasia(rs.getString("nome_fornecedor"));
-            c.setFornecedor(forn); // Associa à compra
+        while (rs.next()) {
+            if (c == null) {
+                c = new Compra();
+                c.setId(rs.getInt("id"));
+                c.setDataCompra(rs.getDate("data_compra").toLocalDate());
+                c.setValorTotal(rs.getDouble("valor_total"));
+                
+                Fornecedor forn = new Fornecedor();
+                forn.setId(rs.getInt("fornecedor_id"));
+                forn.setNomeFantasia(rs.getString("nome_fornecedor"));
+                c.setFornecedor(forn);
+            }
 
-            // 2. Montando o objeto Produto que veio do JOIN
+            CompraProduto item = new CompraProduto();
+            item.setQuantidade(rs.getDouble("quantidade"));
+            item.setValorUnitario(rs.getDouble("valor_unitario"));
+            
             Produto prod = new Produto();
             prod.setId(rs.getInt("produto_id"));
             prod.setNome(rs.getString("nome_produto"));
-            cp.setProduto(prod); // Associa à compra
-
-            return c;
+            item.setProduto(prod);
+            
+            c.getCompraProdutos().add(item);
         }
+        return c; // Se c continuar null, o Main dirá "não encontrada"
     } catch (Exception e) {
         e.printStackTrace();
     } finally {

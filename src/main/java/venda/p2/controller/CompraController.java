@@ -7,31 +7,41 @@ import venda.p2.model.CompraProduto;
 import venda.p2.model.Produto;
 
 public class CompraController {
-
     private CompraDAO compraDAO = new CompraDAO();
     private ProdutoDAO produtoDAO = new ProdutoDAO();
-
+    
     public String realizarCompra(Compra compra) {
+        double totalGeralCompra = 0; // 1. Criamos uma variável para somar tudo
+
     for (CompraProduto item : compra.getCompraProdutos()) {
         Produto p = produtoDAO.pesquisar(item.getProduto().getId());
 
-        // RNF007: CÁLCULO DO PREÇO MÉDIO
-        // (Soma do valor total em estoque antigo + valor da compra nova) / (quantidade total nova)
-        double valorEstoqueAtual = p.getQuantidade() * p.getPreco();
+        // ... SEU CÁLCULO DE PREÇO MÉDIO (está certinho) ...
         double valorNovaCompra = item.getQuantidade() * item.getValorUnitario();
+        totalGeralCompra += valorNovaCompra; // 2. ACUMULAMOS o valor de cada item
+
+        double valorEstoqueAtual = p.getQuantidade() * p.getPreco();
         double novaQuantidadeTotal = p.getQuantidade() + item.getQuantidade();
-        
         double novoPrecoMedio = (valorEstoqueAtual + valorNovaCompra) / novaQuantidadeTotal;
 
-        // Atualiza o objeto produto com os novos valores decididos pelo Controller
-        p.setPreco(novoPrecoMedio); // Novo preço médio calculado
-        p.setQuantidade(novaQuantidadeTotal); // RNF002: Soma do estoque
-        p.setValor_ultima_compra(item.getValorUnitario()); // RNF006
+        p.setPreco(novoPrecoMedio);
+        p.setQuantidade(novaQuantidadeTotal);
+        p.setValor_ultima_compra(item.getValorUnitario());
 
-        // Manda o DAO salvar o produto atualizado
         produtoDAO.alterar(p);
     }
 
-    return compraDAO.salvar(compra) ? "Compra registrada!" : "Erro ao salvar.";
+    // 3. O PULO DO GATO: Antes de mandar pro DAO, você seta o total na compra
+    compra.setValorTotal(totalGeralCompra); 
+
+    // 4. Agora o compra.getValorTotal() não será mais NULL!
+    int idGerado = compraDAO.salvar(compra);
+
+        if (idGerado > 0) {
+            return "Compra #" + idGerado + " realizada com sucesso! Estoque e preço médio atualizados.";
+        } else {
+            return "[!] Erro ao salvar a compra no banco de dados.";
+        }
 }
+
 }

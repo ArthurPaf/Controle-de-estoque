@@ -1,13 +1,13 @@
 package venda.p2.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Compra {
     private int id;
     private LocalDate dataCompra;
     private Double valorTotal;
-    private List<CompraProduto> compraProdutos;
     private Fornecedor fornecedor;
 
     /**
@@ -72,6 +72,8 @@ public class Compra {
     public void setValorTotal(Double valorTotal) {
         this.valorTotal = valorTotal;
     }
+
+    private List<CompraProduto> compraProdutos = new ArrayList<>();
 
     /**
      * @return the CompraProdutos

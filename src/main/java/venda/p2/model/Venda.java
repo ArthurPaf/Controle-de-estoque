@@ -1,6 +1,7 @@
 package venda.p2.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Venda {
@@ -8,7 +9,6 @@ public class Venda {
     private Cliente cliente;
     private LocalDate dataVenda;
     private Double valorTotal;
-    private List<VendaProduto> vendaProdutos;
 
     /**
      * 
@@ -87,6 +87,8 @@ public class Venda {
         this.valorTotal = valorTotal;
     }
 
+
+    private List<VendaProduto> vendaProdutos = new ArrayList<>();
     /**
      * @return the vendaProdutos
      */
