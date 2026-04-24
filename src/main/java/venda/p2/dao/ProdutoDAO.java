@@ -5,35 +5,49 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import venda.p2.model.Categoria;
 import venda.p2.model.Produto;
 
 public class ProdutoDAO {
     Connection conn = null;
 
     public Produto pesquisar(int idProduto) {
-        try {
-            conn = Conexao.getConnection();
-            Statement stmt = conn.createStatement();
-            // Adicionado os novos campos no SELECT
-            ResultSet rs = stmt.executeQuery("SELECT id, nome, preco_medio, qtde_estoque, valor_ultima_compra, valor_ultima_venda FROM produto WHERE id = " + idProduto);
-            if (rs.next()) {
-                Produto produto = new Produto();
-                produto.setId(rs.getInt("id"));
-                produto.setNome(rs.getString("nome"));
-                produto.setPreco(rs.getDouble("preco_medio"));
-                produto.setQuantidade(rs.getDouble("qtde_estoque"));
-                produto.setValor_ultima_compra(rs.getDouble("valor_ultima_compra"));
-                produto.setValor_ultima_venda(rs.getDouble("valor_ultima_venda"));
-                return produto;
-            }
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            Conexao.fecharConexao();
+    try {
+        conn = Conexao.getConnection();
+        // SQL com INNER JOIN: busca dados do produto E o nome da categoria associada
+        String sql = "SELECT p.*, c.nome AS nome_da_categoria " +
+                     "FROM produto p " +
+                     "INNER JOIN categoria c ON c.id = p.categoria_id " +
+                     "WHERE p.id = " + idProduto;
+        
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        
+        if (rs.next()) {
+            Produto produto = new Produto();
+            produto.setId(rs.getInt("id"));
+            produto.setNome(rs.getString("nome"));
+            produto.setPreco(rs.getDouble("preco_medio"));
+            produto.setQuantidade(rs.getDouble("qtde_estoque"));
+            
+            // Novos campos que você viu no seu pgAdmin:
+            produto.setValor_ultima_compra(rs.getDouble("valor_ultima_compra"));
+            produto.setValor_ultima_venda(rs.getDouble("valor_ultima_venda"));
+
+            // Montando o objeto Categoria com o nome que veio do JOIN
+            Categoria cat = new Categoria();
+            cat.setId(rs.getInt("categoria_id"));
+            cat.setNome(rs.getString("nome_da_categoria")); // Aqui está o segredo!
+            
+            produto.setCategoria(cat);
+            return produto;
         }
+    } catch (Exception e) {
+        System.out.println("Erro no DAO ao buscar produto: " + e.getMessage());
     }
+    return null;
+}
 
     public List<Produto> pesquisarTodos() {
         try {

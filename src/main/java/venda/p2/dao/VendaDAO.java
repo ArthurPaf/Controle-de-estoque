@@ -95,7 +95,27 @@ public class VendaDAO {
         }
         return null;
     }
-
+    
+    public VendaProduto pesquisarVendaProduto(int vendaId) {
+        try {
+            conn = Conexao.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM venda_produto WHERE id = " + vendaId);
+            if (rs.next()) {
+                VendaProduto vp = new VendaProduto();
+                vp.setId(rs.getInt("venda_id"));
+                vp.setProduto(rs.getInt("produto_id") > 0 ? new ProdutoDAO().pesquisar(rs.getInt("produto_id")) : null);
+                vp.setQuantidade(rs.getDouble("quantidade"));
+                vp.setValorUnitario(rs.getDouble("valor_unitario"));
+                return vp;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Conexao.fecharConexao();
+        }
+        return null;
+    }
     // Mantemos este método aqui porque ele é uma CONSULTA ao banco, 
     // mas quem decide "bloquear" ou não a venda baseada nisso é o Controller.
     public boolean verificaQtdeVendas(int clienteId) {
