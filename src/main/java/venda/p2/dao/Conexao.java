@@ -5,9 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexao {
-    private static final String URL = "jdbc:postgresql://localhost:5432/postgres";
+    // Ajuste o nome do banco de dados conforme o seu projeto
+    private static final String URL = "jdbc:postgresql://10.5.10.10:5432/controle_estoque_prog2_Arthur";
     private static final String USUARIO = "postgres";
-    private static final String SENHA = "1234";
+    private static final String SENHA = "123456";
 
     private static Connection connection;
 
