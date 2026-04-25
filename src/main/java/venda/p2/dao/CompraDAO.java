@@ -15,12 +15,12 @@ import venda.p2.model.Produto;
 public class CompraDAO {
     Connection conn = null;
 
+    //ele salva id automatico
     public int salvar(Compra compra) {
     try {
         conn = Conexao.getConnection();
         conn.setAutoCommit(false); 
         
-        // 1. Inserimos a COMPRA
         String sqlCompra = "INSERT INTO compra (fornecedor_id, data_compra, valor_total) VALUES (?, ?, ?)";
         PreparedStatement pstCompra = conn.prepareStatement(sqlCompra, Statement.RETURN_GENERATED_KEYS);
         
@@ -35,14 +35,12 @@ public class CompraDAO {
             idGerado = rs.getInt(1);
         }
 
-        // 2. SQLs com os nomes exatos das colunas do seu banco
+    
         String sqlItem = "INSERT INTO compra_produto (compra_id, produto_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)";
         
-        // AJUSTE: qtde_estoque conforme você confirmou
         String sqlUpdateProduto = "UPDATE produto SET qtde_estoque = qtde_estoque + ?, valor_ultima_compra = ?, preco_medio = ? WHERE id = ?";
         
         for (CompraProduto item : compra.getCompraProdutos()) {
-            // Salva item da compra (na tabela compra_produto a coluna é 'quantidade')
             PreparedStatement pstItem = conn.prepareStatement(sqlItem);
             pstItem.setInt(1, idGerado);
             pstItem.setInt(2, item.getProduto().getId());
@@ -50,14 +48,10 @@ public class CompraDAO {
             pstItem.setDouble(4, item.getValorUnitario());
             pstItem.executeUpdate();
             
-            // Atualiza o produto (na tabela produto a coluna é 'qtde_estoque')
             PreparedStatement pstProd = conn.prepareStatement(sqlUpdateProduto);
-            pstProd.setDouble(1, item.getQuantidade()); // RNF002: Soma ao estoque
-            pstProd.setDouble(2, item.getValorUnitario()); // RNF006: Última compra
-            
-            // RNF007: Pegamos o preço médio que o Controller calculou e guardou no objeto
+            pstProd.setDouble(1, item.getQuantidade()); 
+            pstProd.setDouble(2, item.getValorUnitario());
             pstProd.setDouble(3, item.getProduto().getPreco()); 
-            
             pstProd.setInt(4, item.getProduto().getId());
             pstProd.executeUpdate();
         }
@@ -66,10 +60,10 @@ public class CompraDAO {
         return idGerado; 
         
     } catch (Exception e) {
-        System.err.println(">>>> ERRO NO DAO AO SALVAR: " + e.getMessage());
+        System.err.println(" ERRO NO DAO AO SALVAR: " + e.getMessage());
         try { 
             if (conn != null) {
-                System.out.println(">>>> Executando Rollback...");
+                System.out.println(" Executando Rollback");
                 conn.rollback(); 
             }
         } catch (SQLException ex) { ex.printStackTrace(); }
@@ -85,7 +79,6 @@ public class CompraDAO {
         conn = Conexao.getConnection();
         Statement stmt = conn.createStatement();
         
-        // Usamos aliases claros: c (compra), cp (itens), f (fornecedor), p (produto)
         String sql = "SELECT c.id, c.data_compra, c.valor_total, c.fornecedor_id, " +
                      "cp.quantidade, cp.valor_unitario, cp.produto_id, " +
                      "f.nome_fantasia AS nome_fornecedor, " +
@@ -124,7 +117,7 @@ public class CompraDAO {
             
             c.getCompraProdutos().add(item);
         }
-        return c; // Se c continuar null, o Main dirá "não encontrada"
+        return c; 
     } catch (Exception e) {
         e.printStackTrace();
     } finally {
@@ -133,26 +126,6 @@ public class CompraDAO {
     return null;
 }
 
-    public List<Compra> pesquisarTodos() {
-        List<Compra> compras = new ArrayList<>();
-        try {
-            conn = Conexao.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM compra ORDER BY data_compra DESC");
-            while (rs.next()) {
-                Compra c = new Compra();
-                c.setId(rs.getInt("id"));
-                c.setDataCompra(rs.getDate("data_compra").toLocalDate());
-                c.setValorTotal(rs.getDouble("valor_total"));
-                compras.add(c);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Conexao.fecharConexao();
-        }
-        return compras;
-    }
 
     public CompraProduto pesquisarCompraProduto(int compraId) {
         try {

@@ -18,6 +18,7 @@ public class CategoriaDAO {
             stmt.setInt(1, categoria.getId());
             stmt.setString(2, categoria.getNome());
 
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,6 +34,7 @@ public class CategoriaDAO {
             stmt.setString(1, categoria.getNome());
             stmt.setInt(2, categoria.getId());
 
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -46,6 +48,8 @@ public class CategoriaDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
+
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,6 +63,7 @@ public class CategoriaDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
+            //o executeQuery retorna os dados do banco, coloca dentro do "rs"
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
@@ -73,22 +78,5 @@ public class CategoriaDAO {
         return null;
     }
 
-    public List<Categoria> pesquisarTodos() {
-        List<Categoria> categorias = new ArrayList<>();
-        String sql = "SELECT * FROM categoria ORDER BY nome";
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Categoria c = new Categoria();
-                c.setId(rs.getInt("id"));
-                c.setNome(rs.getString("nome"));
-                categorias.add(c);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return categorias;
-    }
+    
 }

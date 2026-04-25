@@ -50,6 +50,7 @@ public class FornecedorDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,6 +64,8 @@ public class FornecedorDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
+
+            
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
@@ -79,24 +82,4 @@ public class FornecedorDAO {
         return null;
     }
 
-    public List<Fornecedor> pesquisarTodos() {
-        List<Fornecedor> fornecedores = new ArrayList<>();
-        String sql = "SELECT * FROM fornecedor ORDER BY nome_fantasia";
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Fornecedor f = new Fornecedor();
-                f.setId(rs.getInt("id"));
-                f.setNomeFantasia(rs.getString("nome_fantasia"));
-                f.setRazaoSocial(rs.getString("razao_social"));
-                f.setCnpj(rs.getString("cnpj"));
-                fornecedores.add(f);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return fornecedores;
-    }
 }

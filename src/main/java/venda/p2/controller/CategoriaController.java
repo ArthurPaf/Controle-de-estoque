@@ -21,9 +21,8 @@ public class CategoriaController {
         }
     }
 
-    public List<Categoria> listarTodas() {
-        return categoriaDAO.pesquisarTodos();
-    }
+    
+    
 
     public String excluir(int id) {
         if (categoriaDAO.excluir(id)) {

@@ -34,7 +34,5 @@ public class FornecedorController {
         }
     }
 
-    public List<Fornecedor> listarTodos() {
-        return fornecedorDAO.pesquisarTodos();
-    }
+   
 }

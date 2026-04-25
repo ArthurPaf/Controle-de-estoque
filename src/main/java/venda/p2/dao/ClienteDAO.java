@@ -22,6 +22,7 @@ public class ClienteDAO {
             stmt.setString(5, cliente.getEndereco());
             stmt.setString(6, cliente.getTelefone());
 
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -41,6 +42,7 @@ public class ClienteDAO {
             stmt.setString(5, cliente.getTelefone());
             stmt.setInt(6, cliente.getId());
 
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,6 +56,8 @@ public class ClienteDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, id);
+
+            //isso aqui retorna o numero de linhas afetadas pelo banco, se for maior que 0, significa que a alteração foi feita
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,26 +89,4 @@ public class ClienteDAO {
         return null;
     }
 
-    public List<Cliente> pesquisarTodos() {
-        List<Cliente> clientes = new ArrayList<>();
-        String sql = "SELECT * FROM cliente ORDER BY nome";
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Cliente c = new Cliente();
-                c.setId(rs.getInt("id"));
-                c.setNome(rs.getString("nome"));
-                c.setCpf(rs.getString("cpf"));
-                c.setRg(rs.getString("rg"));
-                c.setEndereco(rs.getString("endereco"));
-                c.setTelefone(rs.getString("telefone"));
-                clientes.add(c);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return clientes;
-    }
 }

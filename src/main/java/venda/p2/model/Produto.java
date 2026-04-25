@@ -9,19 +9,11 @@ public class Produto {
     private Double valor_ultima_venda;
     private Categoria categoria;
 
-    /**
-     * 
-     */
+    
     public Produto() {
     }
 
-    /**
-     * @param id
-     * @param nome
-     * @param preco
-     * @param quantidade
-     * @param categoria
-     */
+    
     public Produto(int id, String nome, Double preco_medio, Double qtde_estoque, Categoria categoria) {
         this.id = id;
         this.nome = nome;
@@ -32,58 +24,42 @@ public class Produto {
 
    
 
-    /**
-     * @return the id
-     */
+    
     public int getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
+    
     public void setId(int id) {
         this.id = id;
     }
 
-    /**
-     * @return the nome
-     */
+    
     public String getNome() {
         return nome;
     }
 
-    /**
-     * @param nome the nome to set
-     */
+    
     public void setNome(String nome) {
         this.nome = nome;
     }
 
-    /**
-     * @return the preco
-     */
+    
     public Double getPreco() {
         return preco_medio;
     }
 
-    /**
-     * @param preco the preco to set
-     */
+    
     public void setPreco(Double preco) {
         this.preco_medio = preco;
     }
 
-    /**
-     * @return the quantidade
-     */
+    
     public Double getQuantidade() {
         return qtde_estoque;
     }
 
-    /**
-     * @param quantidade the quantidade to set
-     */
+    
     public void setQuantidade(Double quantidade) {
         this.qtde_estoque = quantidade;
     }

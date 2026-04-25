@@ -32,9 +32,7 @@ public class ProdutoController {
         return p != null && p.getQuantidade() >= 1;
     }
 
-    public List<Produto> listarTodos() {
-        return produtoDAO.pesquisarTodos();
-    }
+   
 
     public String excluir(int id) {
         // Antes de excluir, no mundo real, você verificaria se o produto 

@@ -35,9 +35,7 @@ public class ClienteController {
         }
     }
 
-    public List<Cliente> listarTodos() {
-        return clienteDAO.pesquisarTodos();
-    }
+    
     
     public Cliente buscarPorId(int id) {
         return clienteDAO.pesquisar(id);
