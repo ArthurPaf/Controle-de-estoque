@@ -13,7 +13,7 @@ public class ClienteController {
     }
 
     public String salvar(Cliente cliente) {
-        // Validação de Regra de Negócio básica
+        
         if (cliente == null) {
             return "Erro: Objeto cliente nulo.";
         }
@@ -27,7 +27,7 @@ public class ClienteController {
             return "Erro: CPF inválido. Deve conter 11 dígitos.";
         }
 
-        // Se passar nas validações, chama o DAO (RF002)
+        
         if (clienteDAO.salvar(cliente)) {
             return "Cliente '" + cliente.getNome() + "' cadastrado com sucesso!";
         } else {

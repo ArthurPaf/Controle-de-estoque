@@ -8,7 +8,7 @@ public class CategoriaController {
     private CategoriaDAO categoriaDAO = new CategoriaDAO();
 
     public String salvar(Categoria categoria) {
-        // Validação básica de regra de negócio
+        
         if (categoria.getNome() == null || categoria.getNome().trim().isEmpty()) {
             return "Erro: O nome da categoria é obrigatório.";
         }

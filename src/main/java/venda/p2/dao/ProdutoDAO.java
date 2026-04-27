@@ -92,8 +92,7 @@ public class ProdutoDAO {
         }
     }
 
-    // Método aprimorado para ser usado tanto na Compra (soma) quanto na Venda (subtrai)
-    // Dentro do ProdutoDAO, o método atualizarEstoque deve ser simples:
+
 public boolean atualizarEstoque(int idProduto, double novaQuantidade, double ultimoPreco, String tipo) {
     try {
         conn = Conexao.getConnection();

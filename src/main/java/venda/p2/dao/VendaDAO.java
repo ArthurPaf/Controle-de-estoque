@@ -17,8 +17,6 @@ public class VendaDAO {
     public int salvar(Venda v) { // Alterado de boolean para int
     String sqlVenda = "INSERT INTO venda (cliente_id, data_venda, valor_total) VALUES (?, ?, ?)";
     String sqlItem = "INSERT INTO venda_produto (venda_id, produto_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)";
-    
-    // SQL PARA O REQUISITO RNF005 (Valor última venda)
     String sqlUpdateProduto = "UPDATE produto SET valor_ultima_venda = ? WHERE id = ?";
 
     try {
@@ -39,7 +37,7 @@ public class VendaDAO {
             idVendaGerado = rs.getInt(1);
         }
 
-        // 3. Salva os Itens e atualiza o campo valor_ultima_venda (RNF005)
+        
         for (VendaProduto vp : v.getVendaProdutos()) {
             // Insere o item na tabela venda_produto
             PreparedStatement pstItem = conn.prepareStatement(sqlItem);
@@ -49,7 +47,7 @@ public class VendaDAO {
             pstItem.setDouble(4, vp.getValorUnitario());
             pstItem.executeUpdate();
 
-            // RNF005: Atualiza o produto com o preço praticado nesta venda
+            
             PreparedStatement pstProd = conn.prepareStatement(sqlUpdateProduto);
             pstProd.setDouble(1, vp.getValorUnitario());
             pstProd.setInt(2, vp.getProduto().getId());
@@ -57,12 +55,12 @@ public class VendaDAO {
         }
 
         conn.commit();
-        return idVendaGerado; // Retorna o ID real (ex: 68) para o Controller mostrar na tela
+        return idVendaGerado; 
 
     } catch (Exception e) {
         try { conn.rollback(); } catch (Exception ex) {}
         e.printStackTrace();
-        return -1; // Retorna -1 se der erro
+        return -1; 
     } finally {
         Conexao.fecharConexao();
     }
@@ -88,7 +86,7 @@ public class VendaDAO {
     public boolean excluir(int id) {
     try {
         conn = Conexao.getConnection();
-        conn.setAutoCommit(false); // Inicia uma transação
+        conn.setAutoCommit(false); 
 
         // 1. Apaga os itens da venda primeiro
         String sqlItens = "DELETE FROM venda_produto WHERE venda_id = ?";
@@ -102,7 +100,7 @@ public class VendaDAO {
         pst.setInt(1, id);
         int linhasAfetadas = pst.executeUpdate();
 
-        conn.commit(); // Salva as duas operações
+        conn.commit(); 
         return linhasAfetadas > 0;
 
     } catch (Exception e) {
@@ -119,8 +117,6 @@ public class VendaDAO {
         conn = Conexao.getConnection();
         Statement stmt = conn.createStatement();
         
-        // Usamos v.id, c.id para o banco não se confundir
-        // E filtramos por v.id para pegar a venda certa
         String sql = "SELECT v.id AS venda_id, v.data_venda, v.valor_total, v.cliente_id, " +
                      "c.nome AS nome_cliente, " +
                      "vp.quantidade, vp.valor_unitario, vp.produto_id, " +
@@ -137,7 +133,6 @@ public class VendaDAO {
         while (rs.next()) {
             if (v == null) {
                 v = new Venda();
-                // Use o apelido "venda_id" que definimos no SELECT
                 v.setId(rs.getInt("venda_id")); 
                 v.setDataVenda(rs.getDate("data_venda").toLocalDate());
                 v.setValorTotal(rs.getDouble("valor_total"));
@@ -188,8 +183,7 @@ public class VendaDAO {
         }
         return null;
     }
-    // Mantemos este método aqui porque ele é uma CONSULTA ao banco, 
-    // mas quem decide "bloquear" ou não a venda baseada nisso é o Controller.
+    
     public boolean verificaQtdeVendas(int clienteId) {
         String sql = "SELECT COUNT(*) FROM venda WHERE cliente_id = ?";
         try (Connection conn = Conexao.getConnection();

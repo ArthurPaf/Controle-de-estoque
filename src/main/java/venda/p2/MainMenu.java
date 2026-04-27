@@ -10,7 +10,7 @@ public class MainMenu {
 
     private static Scanner teclado = new Scanner(System.in);
     
-    // Controllers (Para salvar/regras)
+    // Controllers
     private static CategoriaController catCtrl = new CategoriaController();
     private static ProdutoController prodCtrl = new ProdutoController();
     private static VendaController vendaCtrl = new VendaController();
@@ -19,7 +19,7 @@ public class MainMenu {
     private static CompraController compraCtrl = new CompraController();
     
     
-    // DAOs (Para pesquisar direto, já que o Controller não tem)
+    // DAOs
     private static CategoriaDAO catDAO = new CategoriaDAO();
     private static ProdutoDAO prodDAO = new ProdutoDAO();
     private static ClienteDAO cliDAO = new ClienteDAO();
@@ -54,8 +54,8 @@ public class MainMenu {
 
 
     public static void abaCategorias() {
-    exibirHeader("GESTÃO DE CATEGORIAS (AUTO-ID)");
-    System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Listar/Buscar | 0. Voltar");
+    exibirHeader("GESTÃO DE CATEGORIAS");
+    System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
     System.out.print("Ação: ");
     int op = Integer.parseInt(teclado.nextLine());
 
@@ -114,8 +114,8 @@ public class MainMenu {
     public static void abaProdutos() {
     int op = -1;
     while (op != 0) {
-        exibirHeader("GESTÃO DE PRODUTOS (AUTO-ID)");
-        System.out.println("1. Adicionar Novo | 2. Alterar Nome/Categoria | 3. Excluir | 4. Consultar Estoque | 0. Voltar");
+        exibirHeader("GESTÃO DE PRODUTOS");
+        System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
         System.out.print("Ação: ");
         
         try {
@@ -131,7 +131,6 @@ public class MainMenu {
                     System.out.print("ID da Produto: ");
                     int idProd = Integer.parseInt(teclado.nextLine());
 
-                    // IMPORTANTE: Busca a categoria no DAO para associar
                     Categoria cat = catDAO.pesquisar(idCat);
                     if (cat != null) {
                         Produto p = new Produto();
@@ -174,7 +173,7 @@ public class MainMenu {
                     }
                     break;
 
-                case 4: // CONSULTAR (READ)
+                case 4: // Pesquisar
                     System.out.print("ID do Produto: ");
                     int idBusca = Integer.parseInt(teclado.nextLine());
                     Produto res = prodDAO.pesquisar(idBusca);
@@ -211,7 +210,7 @@ public class MainMenu {
     int op = -1;
     while (op != 0) {
         exibirHeader("GESTÃO DE CLIENTES");
-        System.out.println("1. Novo | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
+        System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
         System.out.print("Opção: ");
         
         try {
@@ -275,7 +274,7 @@ public class MainMenu {
     int op = -1;
     while (op != 0) {
         exibirHeader("GESTÃO DE FORNECEDORES");
-        System.out.println("1. Novo | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
+        System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
         System.out.print("Escolha: ");
         
         try {
@@ -330,7 +329,7 @@ public class MainMenu {
     int op = -1;
     while (op != 0) {
         exibirHeader("ENTRADA DE ESTOQUE (COMPRAS)");
-        System.out.println("1. Registrar Nova Compra | 2. Consultar Compra | 0. Voltar");
+        System.out.println("1. Realizar Compra | 2. Buscar | 0. Voltar");
         System.out.print("Escolha: ");
         
         try {
@@ -364,25 +363,25 @@ public class MainMenu {
     System.out.print("Preço de Custo (Unitário): ");
     double valorUnitario = Double.parseDouble(teclado.nextLine());
 
-    // 1. Criamos a Compra e setamos o básico
+    
     Compra c = new Compra();
     c.setFornecedor(forn);
     c.setDataCompra(LocalDate.now());
     
-    // ADICIONE ISSO: Calcula o total da compra para o banco não ficar com 0
+    
     c.setValorTotal(qtd * valorUnitario);
 
-    // 2. Criamos o Item (CompraProduto)
+    
     CompraProduto cp = new CompraProduto();
     cp.setProduto(prod);
     cp.setQuantidade(qtd);
     cp.setValorUnitario(valorUnitario);
     cp.setCompra(c); 
 
-    // 3. Adiciona o item na lista da compra
+    
     c.getCompraProdutos().add(cp); 
 
-    // Manda pro Controller (que agora retorna a String com o ID)
+    
     String resultado = compraCtrl.realizarCompra(c); 
     System.out.println(">> " + resultado);
     break;
@@ -390,7 +389,7 @@ public class MainMenu {
     System.out.print("Digite o ID da Compra: ");
     try {
         int idBusca = Integer.parseInt(teclado.nextLine());
-        Compra cEnc = compraDAO.pesquisar(idBusca); // Chama o controller
+        Compra cEnc = compraDAO.pesquisar(idBusca); 
 
         if (cEnc != null) {
             System.out.println("\n--- DETALHES DA COMPRA #" + cEnc.getId() + " ---");
@@ -417,7 +416,7 @@ public class MainMenu {
     } catch (NumberFormatException e) {
         System.out.println(">> [!] Erro: Você precisa digitar um número válido para o ID.");
     } catch (Exception e) {
-        // Isso ajuda você a ver o erro REAL em vez da mensagem genérica
+    
         System.out.println(">> [!] Erro inesperado: " + e.getMessage());
         e.printStackTrace(); 
     }
@@ -440,12 +439,12 @@ public class MainMenu {
     int op = -1;
     while (op != 0) {
         exibirHeader("SISTEMA DE VENDAS (REGISTRO)");
-        System.out.println("1. Realizar Nova Venda | 2. Consultar Venda por ID | 3. Cancelar Venda | 0. Voltar");
+        System.out.println("1. Realizar Venda | 2. Buscar | 3. Cancelar Venda | 0. Voltar");
         System.out.print("Escolha: ");
         
         try {
             String entrada = teclado.nextLine();
-            if (entrada.isEmpty()) continue; // Evita erro se apertar enter vazio
+            if (entrada.isEmpty()) continue; 
             op = Integer.parseInt(entrada);
             
             switch (op) {
@@ -464,7 +463,7 @@ public class MainMenu {
     int idProd = Integer.parseInt(teclado.nextLine());
     
     Produto prod = prodDAO.pesquisar(idProd);
-    if (prod == null || prod.getQuantidade() < 1) { // RNF003: Estoque não pode ser < 1
+    if (prod == null || prod.getQuantidade() < 1) { 
         System.out.println(">> [!] Erro: Produto inexistente ou estoque zerado.");
         break;
     }
@@ -477,23 +476,23 @@ public class MainMenu {
         break;
     }
 
-    // --- ADICIONE ISSO AQUI: ---
+    
     System.out.print("Valor Unitário da Venda (Preço Sugerido: " + prod.getPreco() + "): ");
     double precoVenda = Double.parseDouble(teclado.nextLine());
 
     Venda v = new Venda();
     v.setCliente(cli);
-    v.setDataVenda(LocalDate.now()); // Para o RNF004 (Controle por mês)
+    v.setDataVenda(LocalDate.now()); 
     v.setValorTotal(precoVenda * qtd);
 
     VendaProduto vp = new VendaProduto();
     vp.setProduto(prod);
     vp.setQuantidade(qtd);
-    vp.setValorUnitario(precoVenda); // Aqui cumpre o RNF005
+    vp.setValorUnitario(precoVenda);
     
     v.getVendaProdutos().add(vp); 
 
-    // O Controller vai cuidar do RNF004 (Trava de 3 vendas por CPF/Mês)
+    
     String resultado = vendaCtrl.realizarVenda(v);
     System.out.println(">> " + resultado);
     break;
@@ -502,7 +501,7 @@ public class MainMenu {
                     System.out.print("Digite o ID da Venda: ");
                     int idVenda = Integer.parseInt(teclado.nextLine());
                     
-                    // O ideal é que o pesquisar já traga os itens dentro da Venda
+                   
                     Venda vBusca = vendaDAO.pesquisar(idVenda);
                     
                     if (vBusca != null) {
@@ -550,7 +549,7 @@ public class MainMenu {
             System.out.println(">> [!] Erro: Digite apenas números para IDs, quantidades e preços.");
         } catch (Exception e) {
             System.out.println(">> [!] Erro inesperado: " + e.getMessage());
-            e.printStackTrace(); // Útil para você ver o erro no console durante o desenvolvimento
+            e.printStackTrace(); 
         }
         
         if (op != 0) {
@@ -562,7 +561,7 @@ public class MainMenu {
 
     public static void exibirHeader(String t) {
         System.out.println("\n\n====================================");
-        System.out.println(" ARTHUR'S SYSTEM | " + t);
+        System.out.println(" Controle de Estoque | " + t);
         System.out.println("====================================");
     }
 }

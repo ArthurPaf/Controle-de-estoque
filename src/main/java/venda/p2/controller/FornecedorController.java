@@ -8,7 +8,7 @@ public class FornecedorController {
     private FornecedorDAO fornecedorDAO = new FornecedorDAO();
 
     public String salvar(Fornecedor fornecedor) {
-        // Validações de Regra de Negócio
+        
         if (fornecedor == null) {
             return "Erro: Objeto fornecedor inválido.";
         }
@@ -26,7 +26,7 @@ public class FornecedorController {
             return "Erro: CNPJ inválido. Deve conter 14 dígitos.";
         }
 
-        // RF003: Permitir cadastrar fornecedores
+        
         if (fornecedorDAO.salvar(fornecedor)) {
             return "Fornecedor '" + fornecedor.getNomeFantasia() + "' cadastrado com sucesso!";
         } else {
