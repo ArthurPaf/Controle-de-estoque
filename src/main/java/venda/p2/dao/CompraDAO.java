@@ -127,27 +127,6 @@ public class CompraDAO {
 }
 
 
-    public CompraProduto pesquisarCompraProduto(int compraId) {
-        try {
-            conn = Conexao.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM compra_produto WHERE compra_id = " + compraId);
-            if (rs.next()) {
-                CompraProduto cp = new CompraProduto();
-                cp.setCompra(pesquisar(compraId)); // Associa a compra
-                // Aqui você pode querer associar o produto também, se necessário
-                cp.setQuantidade(rs.getDouble("quantidade"));
-                cp.setValorUnitario(rs.getDouble("valor_unitario"));
-                return cp;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Conexao.fecharConexao();
-        }
-        return null;
-    }
-
     public boolean excluir(int id) {
         try {
             conn = Conexao.getConnection();

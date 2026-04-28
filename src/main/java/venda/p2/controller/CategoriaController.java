@@ -13,7 +13,7 @@ public class CategoriaController {
             return "Erro: O nome da categoria é obrigatório.";
         }
 
-        // Se passar na validação, chama o DAO
+        
         if (categoriaDAO.salvar(categoria)) {
             return "Categoria '" + categoria.getNome() + "' cadastrada com sucesso! (RF004)";
         } else {

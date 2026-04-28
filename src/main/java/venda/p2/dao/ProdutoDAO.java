@@ -74,7 +74,7 @@ public class ProdutoDAO {
         try {
             conn = Conexao.getConnection();
             Statement stmt = conn.createStatement();
-            // Atualizando todos os campos novos no UPDATE
+            
             String sql = "UPDATE produto SET nome = '" + produto.getNome()
                     + "', preco_medio = " + produto.getPreco() 
                     + ", qtde_estoque = " + produto.getQuantidade()
@@ -93,22 +93,7 @@ public class ProdutoDAO {
     }
 
 
-public boolean atualizarEstoque(int idProduto, double novaQuantidade, double ultimoPreco, String tipo) {
-    try {
-        conn = Conexao.getConnection();
-        Statement stmt = conn.createStatement();
-        String colunaPreco = tipo.equals("VENDA") ? "valor_ultima_venda" : "valor_ultima_compra";
-        
-        String sql = "UPDATE produto SET qtde_estoque = " + novaQuantidade 
-                   + ", " + colunaPreco + " = " + ultimoPreco 
-                   + " WHERE id = " + idProduto;
-        
-        return stmt.executeUpdate(sql) > 0;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
-    }
-}
+
 
     public boolean excluir(int id) {
         try {

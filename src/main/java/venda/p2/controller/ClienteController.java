@@ -22,7 +22,7 @@ public class ClienteController {
             return "Erro: O nome do cliente é obrigatório.";
         }
 
-        // Validação sugerida: CPF com 11 dígitos
+        // Validação: CPF com 11 dígitos
         if (cliente.getCpf() == null || cliente.getCpf().replaceAll("\\D", "").length() != 11) {
             return "Erro: CPF inválido. Deve conter 11 dígitos.";
         }

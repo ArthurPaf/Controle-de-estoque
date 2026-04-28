@@ -23,14 +23,13 @@ public class VendaDAO {
         conn = Conexao.getConnection();
         conn.setAutoCommit(false); 
 
-        // 1. Salva a Venda e solicita o ID gerado
         PreparedStatement pst = conn.prepareStatement(sqlVenda, Statement.RETURN_GENERATED_KEYS);
         pst.setInt(1, v.getCliente().getId());
         pst.setDate(2, java.sql.Date.valueOf(v.getDataVenda()));
         pst.setDouble(3, v.getValorTotal());
         pst.executeUpdate();
 
-        // 2. PEGA O ID GERADO PELO BANCO
+        
         ResultSet rs = pst.getGeneratedKeys();
         int idVendaGerado = 0;
         if (rs.next()) {
@@ -88,13 +87,13 @@ public class VendaDAO {
         conn = Conexao.getConnection();
         conn.setAutoCommit(false); 
 
-        // 1. Apaga os itens da venda primeiro
+       
         String sqlItens = "DELETE FROM venda_produto WHERE venda_id = ?";
         PreparedStatement pst = conn.prepareStatement(sqlItens);
         pst.setInt(1, id);
         pst.executeUpdate();
 
-        // 2. Agora sim, apaga a venda
+        
         String sqlVenda = "DELETE FROM venda WHERE id = ?";
         pst = conn.prepareStatement(sqlVenda);
         pst.setInt(1, id);
@@ -125,7 +124,7 @@ public class VendaDAO {
                      "INNER JOIN cliente c ON c.id = v.cliente_id " +
                      "INNER JOIN venda_produto vp ON v.id = vp.venda_id " +
                      "INNER JOIN produto p ON p.id = vp.produto_id " +
-                     "WHERE v.id = " + id; // Garante que busca o ID que você digitou
+                     "WHERE v.id = " + id; 
 
         ResultSet rs = stmt.executeQuery(sql);
         Venda v = null;
@@ -163,46 +162,8 @@ public class VendaDAO {
     return null;
 }
     
-    public VendaProduto pesquisarVendaProduto(int vendaId) {
-        try {
-            conn = Conexao.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM venda_produto WHERE id = " + vendaId);
-            if (rs.next()) {
-                VendaProduto vp = new VendaProduto();
-                vp.setId(rs.getInt("venda_id"));
-                vp.setProduto(rs.getInt("produto_id") > 0 ? new ProdutoDAO().pesquisar(rs.getInt("produto_id")) : null);
-                vp.setQuantidade(rs.getDouble("quantidade"));
-                vp.setValorUnitario(rs.getDouble("valor_unitario"));
-                return vp;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Conexao.fecharConexao();
-        }
-        return null;
-    }
-    
-    public boolean verificaQtdeVendas(int clienteId) {
-        String sql = "SELECT COUNT(*) FROM venda WHERE cliente_id = ?";
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, clienteId);
-            ResultSet rs = stmt.executeQuery(); 
-            if (rs.next()) {
-                // Aqui podemos até deixar mais genérico retornando o número total
-                // e o Controller faz a conta de " < 3 ".
-                return rs.getInt(1) < 3; 
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     public int contarVendasMesAtual(int clienteId) {
-    // SQL ajustado para o RNF004 (conta apenas o mês e ano vigentes)
     String sql = "SELECT COUNT(*) FROM venda WHERE cliente_id = ? " +
                  "AND EXTRACT(MONTH FROM data_venda) = EXTRACT(MONTH FROM CURRENT_DATE) " +
                  "AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM CURRENT_DATE)";
@@ -214,11 +175,11 @@ public class VendaDAO {
         ResultSet rs = stmt.executeQuery(); 
         
         if (rs.next()) {
-            return rs.getInt(1); // Retorna a quantidade (ex: 0, 1, 2, 3...)
+            return rs.getInt(1); 
         }
     } catch (SQLException e) {
         e.printStackTrace();
     }
-    return 0; // Se der erro, retorna 0 por segurança
+    return 0; 
 }
 }
