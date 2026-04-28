@@ -68,18 +68,18 @@ public class MainMenu {
             Categoria cNova = new Categoria();
             cNova.setNome(nomeNovo);
             cNova.setId(id);
-            System.out.println(catCtrl.salvar(cNova)); // O DAO fará o ID automático
+            System.out.println(catCtrl.salvar(cNova));
             break;
 
         case 2: // ALTERAR
             System.out.print("ID da categoria que deseja alterar: ");
             int idAlt = Integer.parseInt(teclado.nextLine());
-            Categoria cAlt = catDAO.pesquisar(idAlt); // Busca o dado atual no DAO
+            Categoria cAlt = catDAO.pesquisar(idAlt); 
             
             if (cAlt != null) {
                 System.out.print("Novo nome (Atual: " + cAlt.getNome() + "): ");
                 cAlt.setNome(teclado.nextLine());
-                System.out.println(catDAO.alterar(cAlt)); // Chama o método alterar
+                System.out.println(catDAO.alterar(cAlt));
             } else {
                 System.out.println("Categoria não encontrada.");
             }
@@ -275,7 +275,7 @@ public class MainMenu {
     while (op != 0) {
         exibirHeader("GESTÃO DE FORNECEDORES");
         System.out.println("1. Adicionar | 2. Alterar | 3. Excluir | 4. Buscar | 0. Voltar");
-        System.out.print("Escolha: ");
+        System.out.print("Opção: ");
         
         try {
             op = Integer.parseInt(teclado.nextLine());
@@ -329,8 +329,8 @@ public class MainMenu {
     int op = -1;
     while (op != 0) {
         exibirHeader("ENTRADA DE ESTOQUE (COMPRAS)");
-        System.out.println("1. Realizar Compra | 2. Buscar | 0. Voltar");
-        System.out.print("Escolha: ");
+        System.out.println("1. Realizar Compra | 2. Buscar | 3. Excluir | 0. Voltar");
+        System.out.print("Opção: ");
         
         try {
             op = Integer.parseInt(teclado.nextLine());
@@ -368,8 +368,6 @@ public class MainMenu {
     c.setFornecedor(forn);
     c.setDataCompra(LocalDate.now());
     
-    
-    c.setValorTotal(qtd * valorUnitario);
 
     
     CompraProduto cp = new CompraProduto();
@@ -399,7 +397,7 @@ public class MainMenu {
             System.out.println("------------------------------------");
             System.out.println("PRODUTO:");
 
-            // O erro costuma dar aqui se a lista estiver nula
+           
             if (cEnc.getCompraProdutos() != null && !cEnc.getCompraProdutos().isEmpty()) {
                 for (CompraProduto item : cEnc.getCompraProdutos()) {
                     System.out.printf("- %s | Qtd: %.2f | Unit: R$ %.2f\n",
@@ -421,6 +419,30 @@ public class MainMenu {
         e.printStackTrace(); 
     }
     break;
+
+    case 3: // EXCLUIR
+                    System.out.print("ID da Compra para excluir: ");
+                    int idExc = Integer.parseInt(teclado.nextLine());
+                    
+                    
+                    Compra cConfirma = compraDAO.pesquisar(idExc);
+                    if (cConfirma == null) {
+                        System.out.println(">> [!] Compra não encontrada.");
+                        break;
+                    }
+                    
+                
+                    System.out.print("Confirmar exclusão? (S/N): ");
+                    
+                    if (teclado.nextLine().equalsIgnoreCase("S")) {
+                        
+                        System.out.println(compraDAO.excluir(idExc)); 
+                    } else {
+                        System.out.println(">> Operação abortada.");
+                    }
+                    break;
+
+    
             }
         } catch (Exception e) {
             System.out.println("Erro: Verifique os dados digitados (IDs devem ser números).");
@@ -463,18 +485,11 @@ public class MainMenu {
     int idProd = Integer.parseInt(teclado.nextLine());
     
     Produto prod = prodDAO.pesquisar(idProd);
-    if (prod == null || prod.getQuantidade() < 1) { 
-        System.out.println(">> [!] Erro: Produto inexistente ou estoque zerado.");
-        break;
-    }
-
+    
     System.out.print("Quantidade: ");
     double qtd = Double.parseDouble(teclado.nextLine());
 
-    if (prod.getQuantidade() < qtd) {
-        System.out.println(">> [!] Erro: Estoque insuficiente.");
-        break;
-    }
+    
 
     
     System.out.print("Valor Unitário da Venda (Preço Sugerido: " + prod.getPreco() + "): ");
@@ -527,7 +542,7 @@ public class MainMenu {
                     System.out.print("ID da Venda para cancelar: ");
                     int idExc = Integer.parseInt(teclado.nextLine());
                     
-                    // Busca antes para conferir
+                    
                     Venda vConfirma = vendaDAO.pesquisar(idExc);
                     if (vConfirma == null) {
                         System.out.println(">> [!] Venda não encontrada.");
@@ -535,10 +550,10 @@ public class MainMenu {
                     }
                     
                     System.out.println("Venda de R$ " + vConfirma.getValorTotal() + " para " + vConfirma.getCliente().getNome());
-                    System.out.print("Isso devolverá o estoque. Confirmar cancelamento? (S/N): ");
+                    System.out.print("Confirmar cancelamento? (S/N): ");
                     
                     if (teclado.nextLine().equalsIgnoreCase("S")) {
-                        // O Controller deve cuidar de devolver o estoque antes de excluir
+                        
                         System.out.println(vendaDAO.excluir(idExc)); 
                     } else {
                         System.out.println(">> Operação abortada.");

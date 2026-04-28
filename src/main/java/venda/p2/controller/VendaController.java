@@ -16,7 +16,7 @@ public class VendaController {
         int totalVendasNoMes = vendaDAO.contarVendasMesAtual(venda.getCliente().getId());
 
         if (totalVendasNoMes >= 3) {
-            return "Erro: O cliente atingiu o limite de 3 vendas este mês (RNF004).";
+            return "Erro: O cliente atingiu o limite de 3 vendas este mês.";
         }
 
         for (VendaProduto item : venda.getVendaProdutos()) {
@@ -46,4 +46,5 @@ public class VendaController {
             return "[!] Erro ao salvar a venda no banco de dados.";
         }
     }
+
 }

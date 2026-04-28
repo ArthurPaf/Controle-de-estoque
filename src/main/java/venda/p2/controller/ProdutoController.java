@@ -10,7 +10,7 @@ public class ProdutoController {
     public String salvar(Produto produto) {
         
         if (produto.getCategoria() == null || produto.getCategoria().getId() <= 0) {
-            return "Erro: O produto deve estar vinculado a uma categoria (RF005).";
+            return "Erro: O produto deve estar vinculado a uma categoria.";
         }
 
         if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
@@ -28,15 +28,14 @@ public class ProdutoController {
     // Sistema não pode realizar venda se estoque for inferior a 1
     public boolean temEstoqueParaVenda(int produtoId) {
         Produto p = produtoDAO.pesquisar(produtoId);
-        // Se o produto não existir ou a quantidade for menor que 1, retorna false
+       
         return p != null && p.getQuantidade() >= 1;
     }
 
    
 
     public String excluir(int id) {
-        // Antes de excluir, no mundo real, você verificaria se o produto 
-        // já não está em alguma venda
+        
         if (produtoDAO.excluir(id)) {
             return "Produto excluído!";
         } else {
@@ -44,7 +43,7 @@ public class ProdutoController {
         }
     }
 
-    // Mantemos os métodos de busca para as telas
+    
     public Produto pesquisar(int id) {
         return produtoDAO.pesquisar(id);
     }

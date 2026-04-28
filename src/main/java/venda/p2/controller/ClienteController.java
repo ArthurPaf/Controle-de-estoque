@@ -15,14 +15,15 @@ public class ClienteController {
     public String salvar(Cliente cliente) {
         
         if (cliente == null) {
-            return "Erro: Objeto cliente nulo.";
+            return "Erro: cliente nulo.";
         }
 
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             return "Erro: O nome do cliente é obrigatório.";
         }
 
-        // Validação: CPF com 11 dígitos
+        // tem como colocar pontos e traços no cpf :)
+        // Validação: CPF com 11 dígitos, o replaceAll("\\D", "") remove qualquer caractere que não seja um numero
         if (cliente.getCpf() == null || cliente.getCpf().replaceAll("\\D", "").length() != 11) {
             return "Erro: CPF inválido. Deve conter 11 dígitos.";
         }
