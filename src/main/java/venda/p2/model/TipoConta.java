@@ -7,23 +7,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "categoria") 
-public class Categoria {
-    
+@Table(name = "tipo_conta")
+public class TipoConta {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    private String nome;
+    private String descricao;
 
     
-    public Categoria() {
+    public TipoConta() {
     }
 
-    
-    public Categoria(int id, String nome) {
-        this.id = id;
-        this.nome = nome;
+    public TipoConta(String descricao) {
+        this.descricao = descricao;
     }
 
     
@@ -35,11 +33,11 @@ public class Categoria {
         this.id = id;
     }
 
-    public String getNome() {
-        return nome;
+    public String getDescription() {
+        return descricao;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setDescription(String descricao) {
+        this.descricao = descricao;
     }
 }

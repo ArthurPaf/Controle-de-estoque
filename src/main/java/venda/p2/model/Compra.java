@@ -1,14 +1,36 @@
 package venda.p2.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "compra")
 public class Compra {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private int id;
+    
     private LocalDate dataCompra;
     private Double valorTotal;
+
+    @ManyToOne
+    @JoinColumn(name = "fornecedor_id") 
     private Fornecedor fornecedor;
+
+    
+    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CompraProduto> compraProdutos = new ArrayList<>();
 
     
     public Compra() {
@@ -20,7 +42,6 @@ public class Compra {
         this.dataCompra = dataCompra;
         this.valorTotal = valorTotal;
         this.fornecedor = fornecedor;
-
     }
 
     
@@ -28,39 +49,30 @@ public class Compra {
         return id;
     }
 
-    
     public void setId(int id) {
         this.id = id;
     }
 
-    
     public LocalDate getDataCompra() {
         return dataCompra;
     }
 
-    
     public void setDataCompra(LocalDate dataCompra) {
         this.dataCompra = dataCompra;
     }
 
-    
     public Double getValorTotal() {
         return valorTotal;
     }
 
-    
     public void setValorTotal(Double valorTotal) {
         this.valorTotal = valorTotal;
     }
 
-    private List<CompraProduto> compraProdutos = new ArrayList<>();
-
-    
     public List<CompraProduto> getCompraProdutos() {
         return compraProdutos;
     }
 
-    
     public void setCompraProdutos(List<CompraProduto> compraProdutos) {
         this.compraProdutos = compraProdutos;
     }

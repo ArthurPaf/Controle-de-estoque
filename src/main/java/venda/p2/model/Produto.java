@@ -1,12 +1,29 @@
 package venda.p2.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "produto")
 public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private int id;
+    
     private String nome;
     private Double preco_medio;
     private Double qtde_estoque;
     private Double valor_ultima_compra;
     private Double valor_ultima_venda;
+
+    @ManyToOne 
+    @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
     
@@ -22,44 +39,35 @@ public class Produto {
         this.categoria = categoria;
     }
 
-   
-
     
     public int getId() {
         return id;
     }
 
-    
     public void setId(int id) {
         this.id = id;
     }
 
-    
     public String getNome() {
         return nome;
     }
 
-    
     public void setNome(String nome) {
         this.nome = nome;
     }
 
-    
     public Double getPreco() {
         return preco_medio;
     }
 
-    
     public void setPreco(Double preco) {
         this.preco_medio = preco;
     }
 
-    
     public Double getQuantidade() {
         return qtde_estoque;
     }
 
-    
     public void setQuantidade(Double quantidade) {
         this.qtde_estoque = quantidade;
     }

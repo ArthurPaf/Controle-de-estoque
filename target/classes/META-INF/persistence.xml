@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="siscom-pu">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <class>venda.p2.model.Categoria</class>
+        <class>venda.p2.model.Produto</class>
+        <class>venda.p2.model.Cliente</class>
+        <class>venda.p2.model.Venda</class>
+        <class>venda.p2.model.Compra</class>
+        <class>venda.p2.model.CompraProduto</class>
+        <class>venda.p2.model.Fornecedor</class>
+        <class>venda.p2.model.FornecedorProduto</class>
+        <class>venda.p2.model.Venda</class>
+        <class>venda.p2.model.VendaProduto</class>
+        <class>venda.p2.model.FormaPagamento</class>
+        <class>venda.p2.model.TipoConta</class>
+        <class>venda.p2.model.Financeiro</class>
+        <class>venda.p2.model.FinanceiroParcela</class>
+        <class>venda.p2.model.VendaProduto</class>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/postgres" />
+            <property name="jakarta.persistence.jdbc.user" value="postgres" />
+            <property name="jakarta.persistence.jdbc.password" value="1234" />
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+        </properties>
+    </persistence-unit>
+</persistence>
