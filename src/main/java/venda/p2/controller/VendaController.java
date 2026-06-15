@@ -1,50 +1,91 @@
 package venda.p2.controller;
 
-import venda.p2.dao.VendaDAO;
-import venda.p2.dao.ProdutoDAO;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import venda.p2.dao.GenericDAO;
 import venda.p2.model.Venda;
 import venda.p2.model.VendaProduto;
 import venda.p2.model.Produto;
+import venda.p2.util.JPAUtil;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class VendaController {
 
-    private VendaDAO vendaDAO = new VendaDAO();
-    private ProdutoDAO produtoDAO = new ProdutoDAO();
+    private GenericDAO<Venda> vendaDAO = new GenericDAO<>(Venda.class);
+    private GenericDAO<Produto> produtoDAO = new GenericDAO<>(Produto.class);
 
     public String realizarVenda(Venda venda) {
-        
-        int totalVendasNoMes = vendaDAO.contarVendasMesAtual(venda.getCliente().getId());
+        try {
+            // Regra de Negócio: Limite de 3 vendas no mês atual por cliente
+            int totalVendasNoMes = contarVendasMesAtual(venda.getCliente().getId());
 
-        if (totalVendasNoMes >= 3) {
-            return "Erro: O cliente atingiu o limite de 3 vendas este mês.";
-        }
-
-        for (VendaProduto item : venda.getVendaProdutos()) {
-            Produto p = produtoDAO.pesquisar(item.getProduto().getId());
-
-            if (p == null || p.getQuantidade() < 1) {
-                return "Erro: Produto " + (p != null ? p.getNome() : "inválido") + " sem estoque disponível (RNF003).";
-            }
-            
-            if (item.getQuantidade() > p.getQuantidade()) {
-                return "Erro: Estoque insuficiente para o produto " + p.getNome();
+            if (totalVendasNoMes >= 3) {
+                return "Erro: O cliente atingiu o limite de 3 vendas este mês.";
             }
 
-            double novaQuantidade = p.getQuantidade() - item.getQuantidade();
-            p.setQuantidade(novaQuantidade);
-            p.setValor_ultima_venda(item.getValorUnitario());
+            // Loop de validação e baixa de estoque dos itens da venda
+            for (VendaProduto item : venda.getVendaProdutos()) {
+                Produto p = produtoDAO.buscarPorId(item.getProduto().getId());
 
-            produtoDAO.alterar(p);
-        }
+                if (p == null || p.getQuantidade() < 1) {
+                    return "Erro: Produto " + (p != null ? p.getNome() : "inválido") + " sem estoque disponível (RNF003).";
+                }
+                
+                if (item.getQuantidade() > p.getQuantidade()) {
+                    return "Erro: Estoque insuficiente para o produto " + p.getNome();
+                }
 
-        
-        int idGerado = vendaDAO.salvar(venda); 
+                // Deduz a quantidade vendida e salva o histórico do valor do item
+                double novaQuantidade = p.getQuantidade() - item.getQuantidade();
+                p.setQuantidade(novaQuantidade);
+                p.setValor_ultima_venda(item.getValorUnitario());
 
-        if (idGerado > 0) {
-            return "Venda #" + idGerado + " realizada com sucesso!";
-        } else {
-            return "[!] Erro ao salvar a venda no banco de dados.";
+                // O método salvar do GenericDAO faz o papel de dar o update na tabela produto
+                produtoDAO.salvar(p);
+            }
+
+            // Salva a venda mestre (o Hibernate cuida de gerar o ID e salvar a lista cascateada se mapeada com CascadeType.ALL)
+            vendaDAO.salvar(venda); 
+            int idGerado = venda.getId();
+
+            if (idGerado > 0) {
+                return "Venda #" + idGerado + " realizada com sucesso!";
+            } else {
+                return "[!] Erro ao salvar a venda no banco de dados.";
+            }
+        } catch (Exception e) {
+            return "[!] Erro ao processar a venda: " + e.getMessage();
         }
     }
 
+    // Método substituto da antiga VendaDAO para contar as vendas usando Hibernate/HQL de forma direta
+    private int contarVendasMesAtual(int clienteId) {
+        try (Session sessao = JPAUtil.getEntityManager().openSession()) {
+            // Define o início e o fim do mês atual
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Date inicioMes = cal.getTime();
+            
+            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date fimMes = cal.getTime();
+
+            String hql = "select count(v) from Venda v where v.cliente.id = :clienteId and v.data between :inicioMes and :fimMes";
+            Query<Long> query = sessao.createQuery(hql, Long.class);
+            query.setParameter("clienteId", clienteId);
+            query.setParameter("inicioMes", inicioMes);
+            query.setParameter("fimMes", fimMes);
+
+            return query.getSingleResult().intValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // Método útil para alimentar histórico de vendas nas JTables das Views
+    public List<Venda> listarTodas() {
+        return vendaDAO.listarTodos();
+    }
 }

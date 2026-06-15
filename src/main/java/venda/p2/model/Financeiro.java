@@ -1,151 +1,64 @@
 package venda.p2.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
-import jakarta.persistence.CascadeType;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "financeiro")
 public class Financeiro {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
-    private String pagar_receber; 
-    private Double valorTotal;
-    private LocalDate dataLancamento;
+
+    @Temporal(TemporalType.DATE)
+    private Date data_conta;
+
+    private int pagar_ou_receber; // Ex: 1 para Pagar (Saída), 2 para Receber (Entrada)
 
     @ManyToOne
-    @JoinColumn(name = "tipo_conta_id") 
+    @JoinColumn(name = "tipo_conta_id")
     private TipoConta tipoConta;
 
     @ManyToOne
-    @JoinColumn(name = "forma_pagamento_id") 
+    @JoinColumn(name = "forma_pagamento_id")
     private FormaPagamento formaPagamento;
 
-    
     @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = true)
-    private Cliente cliente;
-
-    @ManyToOne
-    @JoinColumn(name = "fornecedor_id", nullable = true)
-    private Fornecedor fornecedor;
-
-    
-    @OneToOne
-    @JoinColumn(name = "venda_id", nullable = true)
-    private Venda venda;
-
-    @OneToOne
     @JoinColumn(name = "compra_id", nullable = true)
     private Compra compra;
 
-    
-    @OneToMany(mappedBy = "financeiro", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FinanceiroParcela> parcelas = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "venda_id", nullable = true)
+    private Venda venda;
 
-    // Construtor padrão
+    private double valor_total;
+
     public Financeiro() {
+        this.data_conta = new Date();
     }
 
-    
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public Date getData_conta() { return data_conta; }
+    public void setData_conta(Date data_conta) { this.data_conta = data_conta; }
 
-    public String getPagar_receber() {
-        return pagar_receber;
-    }
+    public int getPagar_ou_receber() { return pagar_ou_receber; }
+    public void setPagar_ou_receber(int pagar_ou_receber) { this.pagar_ou_receber = pagar_ou_receber; }
 
-    public void setPagar_receber(String pagar_receber) {
-        this.pagar_receber = pagar_receber;
-    }
+    public TipoConta getTipoConta() { return tipoConta; }
+    public void setTipoConta(TipoConta tipoConta) { this.tipoConta = tipoConta; }
 
-    public Double getValorTotal() {
-        return valorTotal;
-    }
+    public FormaPagamento getFormaPagamento() { return formaPagamento; }
+    public void setFormaPagamento(FormaPagamento formaPagamento) { this.formaPagamento = formaPagamento; }
 
-    public void setValorTotal(Double valorTotal) {
-        this.valorTotal = valorTotal;
-    }
+    public Compra getCompra() { return compra; }
+    public void setCompra(Compra compra) { this.compra = compra; }
 
-    public LocalDate getDataLancamento() {
-        return dataLancamento;
-    }
+    public Venda getVenda() { return venda; }
+    public void setVenda(Venda venda) { this.venda = venda; }
 
-    public void setDataLancamento(LocalDate dataLancamento) {
-        this.dataLancamento = dataLancamento;
-    }
-
-    public TipoConta getTipoConta() {
-        return tipoConta;
-    }
-
-    public void setTipoConta(TipoConta tipoConta) {
-        this.tipoConta = tipoConta;
-    }
-
-    public FormaPagamento getFormaPagamento() {
-        return formaPagamento;
-    }
-
-    public void setFormaPagamento(FormaPagamento formaPagamento) {
-        this.formaPagamento = formaPagamento;
-    }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public Fornecedor getFornecedor() {
-        return fornecedor;
-    }
-
-    public void setFornecedor(Fornecedor fornecedor) {
-        this.fornecedor = fornecedor;
-    }
-
-    public Venda getVenda() {
-        return venda;
-    }
-
-    public void setVenda(Venda venda) {
-        this.venda = venda;
-    }
-
-    public Compra getCompra() {
-        return compra;
-    }
-
-    public void setCompra(Compra compra) {
-        this.compra = compra;
-    }
-
-    public List<FinanceiroParcela> getParcelas() {
-        return parcelas;
-    }
-
-    public void setParcelas(List<FinanceiroParcela> parcelas) {
-        this.parcelas = parcelas;
-    }
+    public double getValor_total() { return valor_total; }
+    public void setValor_total(double valor_total) { this.valor_total = valor_total; }
 }

@@ -97,4 +97,5 @@ public class Venda {
     public void setFinanceiro(Financeiro financeiro) {
         this.financeiro = financeiro;
     }
+    
 }

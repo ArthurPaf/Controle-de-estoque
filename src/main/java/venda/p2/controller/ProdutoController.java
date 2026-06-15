@@ -1,11 +1,12 @@
 package venda.p2.controller;
 
 import java.util.List;
-import venda.p2.dao.ProdutoDAO;
+import venda.p2.dao.GenericDAO;
 import venda.p2.model.Produto;
 
 public class ProdutoController {
-    private ProdutoDAO produtoDAO = new ProdutoDAO();
+    // Trocado o DAO específico pelo GenericDAO
+    private GenericDAO<Produto> produtoDAO = new GenericDAO<>(Produto.class);
 
     public String salvar(Produto produto) {
         
@@ -17,34 +18,38 @@ public class ProdutoController {
             return "Erro: O nome do produto é obrigatório.";
         }
 
-       
-        if (produtoDAO.salvar(produto)) {
+        try {
+            // O Hibernate salva ou atualiza de acordo com o estado do objeto
+            produtoDAO.salvar(produto);
             return "Produto '" + produto.getNome() + "' salvo com sucesso!";
-        } else {
-            return "Erro ao salvar o produto no banco de dados.";
+        } catch (Exception e) {
+            return "Erro ao salvar o produto no banco de dados: " + e.getMessage();
         }
     }
 
-    // Sistema não pode realizar venda se estoque for inferior a 1
+    // Sistema não pode realizar venda se estoque for inferior a 1 (Mantida a regra intacta)
     public boolean temEstoqueParaVenda(int produtoId) {
-        Produto p = produtoDAO.pesquisar(produtoId);
+        Produto p = produtoDAO.buscarPorId(produtoId);
        
         return p != null && p.getQuantidade() >= 1;
     }
 
-   
-
     public String excluir(int id) {
-        
-        if (produtoDAO.excluir(id)) {
+        try {
+            produtoDAO.excluir(id);
             return "Produto excluído!";
-        } else {
+        } catch (Exception e) {
+            // Mantida a mensagem para caso de violação de chave estrangeira (Venda/Compra)
             return "Erro ao excluir: o produto pode estar vinculado a uma venda/compra.";
         }
     }
 
-    
     public Produto pesquisar(int id) {
-        return produtoDAO.pesquisar(id);
+        return produtoDAO.buscarPorId(id);
+    }
+
+    // Adicionado o método para preencher a sua JTable de consulta de produtos na View
+    public List<Produto> listarTodos() {
+        return produtoDAO.listarTodos();
     }
 }
