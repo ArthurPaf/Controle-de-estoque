@@ -1,30 +1,36 @@
 package venda.p2.dao;
 
-
-import venda.p2.util.JPAUtil; // Ajuste o pacote do seu JPAUtil se necessário
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import venda.p2.model.Financeiro;
+
 import java.util.List;
 
 public class GenericDAO<T> {
 
     private final Class<T> classe;
+    // Substitua "venda_p2_PU" pelo nome da sua Persistence Unit que está no seu persistence.xml
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("siscom-pu");
 
     public GenericDAO(Class<T> classe) {
         this.classe = classe;
     }
 
-    // Método salvar que serve tanto para Inserir quanto para Atualizar (Merge)
+    public static EntityManager getEntityManager() {
+        return emf.createEntityManager();
+    }
+
     public void salvar(T entidade) {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
+        EntityManager em = getEntityManager();
         try {
-            tx.begin();
-            em.merge(entidade); // Salva ou atualiza automaticamente
-            tx.commit();
+            em.getTransaction().begin();
+            // O merge serve tanto para INSERT quanto para UPDATE no JPA
+            em.merge(entidade);
+            em.getTransaction().commit();
         } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
             }
             throw e;
         } finally {
@@ -32,9 +38,8 @@ public class GenericDAO<T> {
         }
     }
 
-    // Método para buscar por ID
     public T buscarPorId(int id) {
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em = getEntityManager();
         try {
             return em.find(classe, id);
         } finally {
@@ -42,35 +47,33 @@ public class GenericDAO<T> {
         }
     }
 
-    // Método para listar todos os registros de uma tabela
     public List<T> listarTodos() {
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em = getEntityManager();
         try {
-            // Cria uma query dinâmica simples: "FROM Categoria", "FROM Produto", etc.
-            return em.createQuery("from " + classe.getSimpleName(), classe).getResultList();
+            return em.createQuery("from " + classe.getName(), classe).getResultList();
         } finally {
             em.close();
         }
     }
 
-    // Método para remover um registro do banco
     public void excluir(int id) {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
+        EntityManager em = getEntityManager();
         try {
-            tx.begin();
+            em.getTransaction().begin();
             T entidade = em.find(classe, id);
             if (entidade != null) {
                 em.remove(entidade);
             }
-            tx.commit();
+            em.getTransaction().commit();
         } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
             }
             throw e;
         } finally {
             em.close();
         }
     }
+
+    
 }

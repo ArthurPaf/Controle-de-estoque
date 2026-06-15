@@ -15,7 +15,7 @@ import venda.p2.model.TipoConta;
 
 public class FormFinanceiro extends JFrame {
 
-    private JComboBox<String> cbMovimentacao; // Pagar ou Receber
+    private JComboBox<String> cbMovimentacao;
     private JComboBox<TipoConta> cbTipoConta;
     private JComboBox<FormaPagamento> cbFormaPagamento;
     private JTextField txtValor;
@@ -23,18 +23,19 @@ public class FormFinanceiro extends JFrame {
     private JTable tabelaFinanceiro;
     private DefaultTableModel modeloTabela;
 
+    // ✅ Trocado para FinanceiroDAO
     private GenericDAO<Financeiro> financeiroDAO;
     private GenericDAO<TipoConta> tipoContaDAO;
     private GenericDAO<FormaPagamento> formaPagamentoDAO;
-    
+
     private Financeiro lancamentoSelecionado;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public FormFinanceiro() {
+        // ✅ Trocado para FinanceiroDAO
         financeiroDAO = new GenericDAO<>(Financeiro.class);
         tipoContaDAO = new GenericDAO<>(TipoConta.class);
         formaPagamentoDAO = new GenericDAO<>(FormaPagamento.class);
-        
 
         setTitle("Lançamentos Financeiros (Contas Pagar/Receber)");
         setSize(800, 550);
@@ -42,7 +43,6 @@ public class FormFinanceiro extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- 1. FORMULÁRIO DE LANÇAMENTO ---
         JPanel painelCampos = new JPanel(new GridBagLayout());
         painelCampos.setBorder(BorderFactory.createTitledBorder("Dados do Lançamento"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -68,7 +68,6 @@ public class FormFinanceiro extends JFrame {
         gbc.gridx = 0; gbc.gridy = 3; painelCampos.add(new JLabel("Valor Total (R$):"), gbc);
         gbc.gridx = 1; gbc.gridy = 3; painelCampos.add(txtValor, gbc);
 
-        // --- 2. BOTÕES DE AÇÃO ---
         JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         btnSalvar = new JButton("Lançar Conta");
         btnEditar = new JButton("Atualizar");
@@ -89,7 +88,6 @@ public class FormFinanceiro extends JFrame {
 
         add(painelCampos, BorderLayout.NORTH);
 
-        // --- 3. TABELA DE REGISTROS ---
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Data", "Fluxo", "Categoria", "Forma Pgto", "Valor Total"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -101,7 +99,6 @@ public class FormFinanceiro extends JFrame {
 
         atualizarTabela();
 
-        // --- 4. EVENTOS ---
         tabelaFinanceiro.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) { preencherCamposPelaTabela(); }
@@ -133,7 +130,7 @@ public class FormFinanceiro extends JFrame {
                 String fluxo = (f.getPagar_ou_receber() == 1) ? "🔴 APAGAR" : "🟢 ARECEBER";
                 String cat = f.getTipoConta() != null ? f.getTipoConta().getDescricao() : "Não informada";
                 String fPgto = f.getFormaPagamento() != null ? f.getFormaPagamento().getNome() : "Não informada";
-                
+
                 modeloTabela.addRow(new Object[]{
                     f.getId(),
                     sdf.format(f.getData_conta()),
@@ -171,57 +168,53 @@ public class FormFinanceiro extends JFrame {
     }
 
     private void salvarLancamento() {
-    if (txtValor.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Defina o valor do lançamento.");
-        return;
-    }
-    try {
-        Financeiro f = new Financeiro();
-        f.setPagar_ou_receber(cbMovimentacao.getSelectedIndex() == 0 ? 1 : 2);
-        f.setTipoConta((TipoConta) cbTipoConta.getSelectedItem());
-        
-        FormaPagamento fp = (FormaPagamento) cbFormaPagamento.getSelectedItem();
-        f.setFormaPagamento(fp);
-        
-        double valorTotal = Double.parseDouble(txtValor.getText().trim());
-        f.setValor_total(valorTotal);
-
-        // 1. Salva a conta pai no banco
-        financeiroDAO.salvar(f);
-
-        // 2. Cria o GenericDAO de parcelas aqui mesmo, na hora de usar!
-        GenericDAO<FinanceiroParcela> localParcelaDAO = new GenericDAO<>(FinanceiroParcela.class);
-
-        // 3. Gerar as parcelas automaticamente com base na Forma de Pagamento
-        int qtdParcelas = fp.getQtde_parcela() > 0 ? fp.getQtde_parcela() : 1;
-        double valorPorParcela = valorTotal / qtdParcelas;
-        long prazoEmMilissegundos = fp.getPrazo() * 24L * 60L * 60L * 1000L;
-
-        java.util.Date dataVencimentoAtual = new java.util.Date();
-
-        for (int i = 1; i <= qtdParcelas; i++) {
-            FinanceiroParcela parcela = new FinanceiroParcela();
-            parcela.setFinanceiro(f);
-            parcela.setN_parcela(i);
-            parcela.setValor_original(valorPorParcela);
-            parcela.setValor_final(valorPorParcela);
-            parcela.setStatus(1); // 1 = Em aberto
-            
-            if (i > 1) {
-                dataVencimentoAtual = new java.util.Date(dataVencimentoAtual.getTime() + prazoEmMilissegundos);
-            }
-            parcela.setData_vencimento(dataVencimentoAtual);
-
-            // Usa o DAO local que acabamos de instanciar
-            localParcelaDAO.salvar(parcela); 
+        if (txtValor.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Defina o valor do lançamento.");
+            return;
         }
+        try {
+            Financeiro f = new Financeiro();
+            f.setPagar_ou_receber(cbMovimentacao.getSelectedIndex() == 0 ? 1 : 2);
+            f.setTipoConta((TipoConta) cbTipoConta.getSelectedItem());
 
-        JOptionPane.showMessageDialog(this, "Conta lançada e " + qtdParcelas + " parcela(s) gerada(s)!");
-        limparCampos();
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Erro ao salvar lançamento: " + ex.getMessage());
+            FormaPagamento fp = (FormaPagamento) cbFormaPagamento.getSelectedItem();
+            f.setFormaPagamento(fp);
+
+            double valorTotal = Double.parseDouble(txtValor.getText().trim());
+            f.setValor_total(valorTotal);
+
+            // ✅ Salva e retorna o Financeiro com ID gerado pelo banco
+            Financeiro fSalvo = financeiroDAO.salvarERetornar(f);
+
+            GenericDAO<FinanceiroParcela> localParcelaDAO = new GenericDAO<>(FinanceiroParcela.class);
+
+            int qtdParcelas = fp.getQtde_parcela() > 0 ? fp.getQtde_parcela() : 1;
+            double valorPorParcela = valorTotal / qtdParcelas;
+            long prazoEmMilissegundos = fp.getPrazo() * 24L * 60L * 60L * 1000L;
+            java.util.Date dataVencimentoAtual = new java.util.Date();
+
+            for (int i = 1; i <= qtdParcelas; i++) {
+                FinanceiroParcela parcela = new FinanceiroParcela();
+                parcela.setFinanceiro(fSalvo); // ✅ usa fSalvo com ID correto
+                parcela.setN_parcela(i);
+                parcela.setValor_original(valorPorParcela);
+                parcela.setValor_final(valorPorParcela);
+                parcela.setStatus(1);
+
+                if (i > 1) {
+                    dataVencimentoAtual = new java.util.Date(dataVencimentoAtual.getTime() + prazoEmMilissegundos);
+                }
+                parcela.setData_vencimento(dataVencimentoAtual);
+
+                localParcelaDAO.salvar(parcela);
+            }
+
+            JOptionPane.showMessageDialog(this, "Conta lançada e " + qtdParcelas + " parcela(s) gerada(s)!");
+            limparCampos();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar lançamento: " + ex.getMessage() + "\nDetalhe: " + ex.getCause());
+        }
     }
-}
 
     private void editarLancamento() {
         if (lancamentoSelecionado != null && !txtValor.getText().trim().isEmpty()) {

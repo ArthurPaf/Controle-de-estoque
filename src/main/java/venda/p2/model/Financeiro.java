@@ -1,7 +1,9 @@
 package venda.p2.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "financeiro")
@@ -34,6 +36,10 @@ public class Financeiro {
 
     private double valor_total;
 
+    // ADICIONADO: Relacionamento 1 para Muitos mapeando a lista de parcelas em cascata
+    @OneToMany(mappedBy = "financeiro", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<FinanceiroParcela> parcelas = new ArrayList<>();
+
     public Financeiro() {
         this.data_conta = new Date();
     }
@@ -61,4 +67,14 @@ public class Financeiro {
 
     public double getValor_total() { return valor_total; }
     public void setValor_total(double valor_total) { this.valor_total = valor_total; }
+
+    // ADICIONADO: Getters e Setters para a lista de parcelas
+    public List<FinanceiroParcela> getParcelas() { return parcelas; }
+    public void setParcelas(List<FinanceiroParcela> parcelas) { this.parcelas = parcelas; }
+
+    // Método auxiliar para facilitar o vínculo bidirecional entre mestre e detalhe
+    public void adicionarParcela(FinanceiroParcela parcela) {
+        parcelas.add(parcela);
+        parcela.setFinanceiro(this);
+    }
 }

@@ -61,26 +61,30 @@ public class VendaController {
     }
 
     // Método substituto da antiga VendaDAO para contar as vendas usando Hibernate/HQL de forma direta
+    // Método atualizado para usar EntityManager do JPA
     private int contarVendasMesAtual(int clienteId) {
-        try (Session sessao = JPAUtil.getEntityManager().openSession()) {
-            // Define o início e o fim do mês atual
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.DAY_OF_MONTH, 1);
-            Date inicioMes = cal.getTime();
+        // Pega o EntityManager direto do nosso GenericDAO estruturado acima
+        jakarta.persistence.EntityManager em = venda.p2.dao.GenericDAO.getEntityManager();
+        try {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+            java.util.Date inicioMes = cal.getTime();
             
-            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-            Date fimMes = cal.getTime();
+            cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+            java.util.Date fimMes = cal.getTime();
 
             String hql = "select count(v) from Venda v where v.cliente.id = :clienteId and v.data between :inicioMes and :fimMes";
-            Query<Long> query = sessao.createQuery(hql, Long.class);
+            jakarta.persistence.Query query = em.createQuery(hql);
             query.setParameter("clienteId", clienteId);
             query.setParameter("inicioMes", inicioMes);
             query.setParameter("fimMes", fimMes);
 
-            return query.getSingleResult().intValue();
+            return ((Long) query.getSingleResult()).intValue();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        } finally {
+            em.close(); // Sempre fechar o EntityManager para não vazar conexão
         }
     }
 

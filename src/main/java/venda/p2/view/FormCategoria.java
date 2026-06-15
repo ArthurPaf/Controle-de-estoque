@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.controller.CategoriaController;
 import venda.p2.model.Categoria;
 
 public class FormCategoria extends JFrame {
@@ -16,13 +16,12 @@ public class FormCategoria extends JFrame {
     private JTable tabelaCategorias;
     private DefaultTableModel modeloTabela;
     
-    private GenericDAO<Categoria> categoriaDAO;
-    
-    // Variável para guardar a categoria selecionada para alteração/exclusão
+    // View conversa estritamente com o Controller correspondente
+    private CategoriaController categoriaController;
     private Categoria categoriaSelecionada;
 
     public FormCategoria() {
-        categoriaDAO = new GenericDAO<>(Categoria.class);
+        categoriaController = new CategoriaController();
         
         setTitle("Gerenciar Categorias (CRUD)");
         setSize(550, 450);
@@ -49,7 +48,6 @@ public class FormCategoria extends JFrame {
         btnExcluir = new JButton("Excluir");
         btnLimpar = new JButton("Limpar");
 
-        // Desabilita botões de edição inicialmente
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
 
@@ -67,7 +65,7 @@ public class FormCategoria extends JFrame {
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome da Categoria"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Bloqueia edição direta nas células
+                return false; 
             }
         };
         
@@ -76,128 +74,107 @@ public class FormCategoria extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Categorias Cadastradas"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // Atualiza a tabela com o que já existe no banco
-        atualizarTabela();
+        // --- 4. EVENTOS E AÇÕES DOS BOTÕES (A classe encerra aqui!) ---
 
-        // --- 4. EVENTOS ---
-
-        // Evento de clique na tabela para selecionar
+        // Evento de clique na tabela: busca a entidade pelo id e atualiza estado visual dos campos
         tabelaCategorias.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                preencherCamposPelaTabela();
+                int linhaSelecionada = tabelaCategorias.getSelectedRow();
+                if (linhaSelecionada >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
+                    try {
+                        categoriaSelecionada = categoriaController.buscarPorId(id);
+                        if (categoriaSelecionada != null) {
+                            txtNome.setText(categoriaSelecionada.getNome());
+                            btnSalvar.setEnabled(false);
+                            btnEditar.setEnabled(true);
+                            btnExcluir.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(FormCategoria.this, "Erro ao carregar: " + ex.getMessage());
+                    }
+                }
             }
         });
 
-        // Ações dos botões
-        btnSalvar.addActionListener(e -> salvarCategoria());
-        btnEditar.addActionListener(e -> editarCategoria());
-        btnExcluir.addActionListener(e -> excluirCategoria());
-        btnLimpar.addActionListener(e -> limparCampos());
-    }
-
-    private void atualizarTabela() {
-        modeloTabela.setRowCount(0);
-        try {
-            List<Categoria> lista = categoriaDAO.listarTodos();
-            for (Categoria cat : lista) {
-                modeloTabela.addRow(new Object[]{
-                    cat.getId(),
-                    cat.getNome()
-                });
+        // Ação do Botão Salvar
+        btnSalvar.addActionListener(e -> {
+            String nome = txtNome.getText().trim();
+            if (nome.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "O nome da categoria é obrigatório.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar categorias: " + e.getMessage());
-        }
-    }
-
-    private void preencherCamposPelaTabela() {
-        int linhaSelecionada = tabelaCategorias.getSelectedRow();
-        if (linhaSelecionada >= 0) {
-            int id = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
-            
             try {
-                categoriaSelecionada = categoriaDAO.buscarPorId(id);
+                Categoria novaCategoria = new Categoria();
+                novaCategoria.setNome(nome);
                 
-                if (categoriaSelecionada != null) {
-                    txtNome.setText(categoriaSelecionada.getNome());
-                    
-                    // Modifica os botões
-                    btnSalvar.setEnabled(false);
-                    btnEditar.setEnabled(true);
-                    btnExcluir.setEnabled(true);
-                }
+                categoriaController.salvarCategoria(novaCategoria);
+                
+                JOptionPane.showMessageDialog(this, "Categoria cadastrada com sucesso!");
+                btnLimpar.doClick(); 
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao carregar categoria: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
             }
-        }
-    }
+        });
 
-    private void salvarCategoria() {
-        String nome = txtNome.getText().trim();
-
-        if (nome.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "O nome da categoria é obrigatório.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        try {
-            Categoria novaCategoria = new Categoria();
-            novaCategoria.setNome(nome);
-
-            categoriaDAO.salvar(novaCategoria);
-            JOptionPane.showMessageDialog(this, "Categoria cadastrada com sucesso!");
-            limparCampos();
-            
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
-        }
-    }
-
-    private void editarCategoria() {
-        String nome = txtNome.getText().trim();
-
-        if (categoriaSelecionada != null && !nome.isEmpty()) {
-            try {
-                categoriaSelecionada.setNome(nome);
-
-                categoriaDAO.salvar(categoriaSelecionada); // Atualiza no Hibernate
-                JOptionPane.showMessageDialog(this, "Categoria atualizada com sucesso!");
-                limparCampos();
-                
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
-            }
-        }
-    }
-
-    private void excluirCategoria() {
-        if (categoriaSelecionada != null) {
-            int confirmacao = JOptionPane.showConfirmDialog(this, 
-                "Tem certeza que deseja excluir a categoria '" + categoriaSelecionada.getNome() + "'?", 
-                "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-                
-            if (confirmacao == JOptionPane.YES_OPTION) {
+        // Ação do Botão Editar
+        btnEditar.addActionListener(e -> {
+            String nome = txtNome.getText().trim();
+            if (categoriaSelecionada != null && !nome.isEmpty()) {
                 try {
-                    categoriaDAO.excluir(categoriaSelecionada.getId());
-                    JOptionPane.showMessageDialog(this, "Categoria excluída com sucesso!");
-                    limparCampos();
+                    categoriaSelecionada.setNome(nome);
+                    
+                    categoriaController.salvarCategoria(categoriaSelecionada);
+                    
+                    JOptionPane.showMessageDialog(this, "Categoria atualizada com sucesso!");
+                    btnLimpar.doClick();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage() + 
-                        "\n(Provavelmente existem produtos vinculados a esta categoria!)", "Erro de Integridade", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
                 }
             }
-        }
-    }
+        });
 
-    private void limparCampos() {
-        txtNome.setText("");
-        categoriaSelecionada = null;
-        
-        btnSalvar.setEnabled(true);
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
-        
-        atualizarTabela();
+        // Ação do Botão Excluir
+        btnExcluir.addActionListener(e -> {
+            if (categoriaSelecionada != null) {
+                int confirmacao = JOptionPane.showConfirmDialog(this, 
+                    "Tem certeza que deseja excluir a categoria '" + categoriaSelecionada.getNome() + "'?", 
+                    "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
+                    
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    try {
+                        categoriaController.excluirCategoria(categoriaSelecionada.getId());
+                        JOptionPane.showMessageDialog(this, "Categoria excluída com sucesso!");
+                        btnLimpar.doClick();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage() + 
+                            "\n(Provavelmente existem produtos vinculados a esta categoria!)", "Erro de Integridade", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
+        // Ação do Botão Limpar / Responsável também por resetar o estado e reatualizar a tabela
+        btnLimpar.addActionListener(e -> {
+            txtNome.setText("");
+            categoriaSelecionada = null;
+            btnSalvar.setEnabled(true);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+            
+            modeloTabela.setRowCount(0);
+            try {
+                List<Categoria> lista = categoriaController.listarCategorias();
+                for (Categoria cat : lista) {
+                    modeloTabela.addRow(new Object[]{ cat.getId(), cat.getNome() });
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela: " + ex.getMessage());
+            }
+        });
+
+        // Carrega os dados na JTable na primeira abertura da janela
+        btnLimpar.doClick();
     }
 }
