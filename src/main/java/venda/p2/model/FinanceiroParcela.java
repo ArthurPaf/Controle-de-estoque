@@ -12,14 +12,19 @@ public class FinanceiroParcela {
     @Column(name = "id")
     private int id;
 
-    @Column(name = "numeroparcela", nullable = false)
+    // ALTERADO: O banco exige "numeroparcela" (tudo junto e sem underline)
+    @Column(name = "n_parcela", nullable = false)
     private int n_parcela;
+
+    @Column(name = "numeroparcela", insertable = true, updatable = true)
+    private int numeroparcela;
 
     @Column(name = "datavencimento")
     @Temporal(TemporalType.DATE)
     private Date data_vencimento;
 
-    @Column(name = "valorparcela")
+    // ALTERADO: O banco exige "valorparcela" (tudo junto e sem underline)
+    @Column(name = "valor_original", nullable = false)
     private double valor_original;
 
     @Column(name = "status")
@@ -45,13 +50,12 @@ public class FinanceiroParcela {
     public FinanceiroParcela() {
     }
 
-    // --- GETTERS E SETTERS ---
-
+    // --- MANTENHA SEUS GETTERS E SETTERS DO JEITO QUE JÁ ESTÃO ---
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
     public int getN_parcela() { return n_parcela; }
-    public void setN_parcela(int n_parcela) { this.n_parcela = n_parcela; }
+    public void setN_parcela(int n_parcela) { this.n_parcela = n_parcela; this.numeroparcela = n_parcela; }
 
     public Date getData_vencimento() { return data_vencimento; }
     public void setData_vencimento(Date data_vencimento) { this.data_vencimento = data_vencimento; }
@@ -69,7 +73,7 @@ public class FinanceiroParcela {
     public void setValor_final(double valor_final) { this.valor_final = valor_final; }
 
     public double getDesconto() { return desconto; }
-    public void setDesconto(double desconto) { this.desconto = desconto; } // <-- Corrigido aqui
+    public void setDesconto(double desconto) { this.desconto = desconto; }
 
     public double getAcrescimo() { return acrescimo; }
     public void setAcrescimo(double acrescimo) { this.acrescimo = acrescimo; }

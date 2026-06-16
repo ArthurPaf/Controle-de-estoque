@@ -1,58 +1,115 @@
 package venda.p2.controller;
 
+import venda.p2.dao.FinanceiroDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.model.Financeiro;
 import venda.p2.model.FinanceiroParcela;
 import venda.p2.model.FormaPagamento;
+import venda.p2.model.TipoConta;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FinanceiroController {
 
-    private GenericDAO<Financeiro> financeiroDAO;
+    private FinanceiroDAO financeiroDAO;
+    private GenericDAO<TipoConta> tipoContaDAO;
+    private GenericDAO<FormaPagamento> formaPagamentoDAO;
 
     public FinanceiroController() {
-        // Agora só precisamos do DAO do Financeiro, pois ele gerencia as parcelas em cascata
-        this.financeiroDAO = new GenericDAO<>(Financeiro.class);
+        this.financeiroDAO = new FinanceiroDAO();
+        this.tipoContaDAO = new GenericDAO<>(TipoConta.class);
+        this.formaPagamentoDAO = new GenericDAO<>(FormaPagamento.class);
     }
 
-    // Regra de Negócio: Lança a conta e gera as parcelas de forma atômica via Cascata
-    public void lancarContaComParcelas(Financeiro financeiro, FormaPagamento fp) throws Exception {
-        try {
-            // 1. Calcula a quantidade e valores das parcelas
-            int qtdParcelas = fp.getQtde_parcela() > 0 ? fp.getQtde_parcela() : 1;
-            double valorPorParcela = financeiro.getValor_total() / qtdParcelas;
-            
-            // Multiplicação de dias convertidos para milissegundos
-            long prazoEmMilissegundos = fp.getPrazo() * 24L * 60L * 60L * 1000L;
-            java.util.Date dataVencimentoAtual = new java.util.Date();
+    public List<TipoConta> listarTiposConta() throws Exception {
+        return tipoContaDAO.listarTodos();
+    }
 
-            // 2. Cria as estruturas das parcelas na memória e vincula ao objeto pai
-            for (int i = 1; i <= qtdParcelas; i++) {
-                FinanceiroParcela parcela = new FinanceiroParcela();
-                parcela.setN_parcela(i);
-                parcela.setValor_original(valorPorParcela);
-                parcela.setValor_final(valorPorParcela);
-                parcela.setStatus(1); // 1 = Aberto
-                
-                if (i > 1) {
-                    dataVencimentoAtual = new java.util.Date(dataVencimentoAtual.getTime() + prazoEmMilissegundos);
-                }
-                parcela.setData_vencimento(dataVencimentoAtual);
+    public List<FormaPagamento> listarFormasPagamento() throws Exception {
+        return formaPagamentoDAO.listarTodos();
+    }
 
-                // Método auxiliar que adiciona à lista interna e faz o 'parcela.setFinanceiro(financeiro)' automaticamente
-                financeiro.adicionarParcela(parcela);
+    public List<Financeiro> listarLancamentos() throws Exception {
+        return financeiroDAO.listarTodos();
+    }
+
+    public Financeiro buscarPorId(int id) throws Exception {
+        return financeiroDAO.buscarPorId(id);
+    }
+
+    public List<FinanceiroParcela> obterParcelas(int idFinanceiro) throws Exception {
+    return financeiroDAO.listarParcelasPorLancamento(idFinanceiro);
+    }
+
+    public void gerenciarNovoLancamento(int tipoMovimentacao, TipoConta tc, FormaPagamento fp, String valorStr) throws Exception {
+        if (valorStr == null || valorStr.trim().isEmpty()) {
+            throw new Exception("Defina o valor do lançamento.");
+        }
+
+        double valorTotal = Double.parseDouble(valorStr.trim());
+
+        Financeiro f = new Financeiro();
+        f.setPagar_ou_receber(tipoMovimentacao == 0 ? 1 : 2);
+        f.setTipoConta(tc);
+        f.setFormaPagamento(fp);
+        f.setValor_total(valorTotal);
+        f.setData_conta(new java.util.Date());
+
+        // Salva o pai para obter a ID gerada
+        Financeiro fSalvo = financeiroDAO.salvarERetornar(f);
+
+        // Regra de Negócio: Desmembramento e cálculo temporal das parcelas
+        int qtdParcelas = (fp != null && fp.getQtde_parcela() > 0) ? fp.getQtde_parcela() : 1;
+        double valorPorParcela = valorTotal / qtdParcelas;
+        long prazoEmMilissegundos = (fp != null) ? fp.getPrazo() * 24L * 60L * 60L * 1000L : 0L;
+        
+        java.util.Date dataVencimentoAtual = new java.util.Date();
+        List<FinanceiroParcela> listaParcelas = new ArrayList<>();
+
+        for (int i = 1; i <= qtdParcelas; i++) {
+            FinanceiroParcela parcela = new FinanceiroParcela();
+            parcela.setFinanceiro(fSalvo);
+            parcela.setN_parcela(i);
+            parcela.setValor_original(valorPorParcela);
+            parcela.setValor_final(valorPorParcela);
+            parcela.setStatus(1); // 1 - Aberto/Pendente
+
+            if (i > 1) {
+                dataVencimentoAtual = new java.util.Date(dataVencimentoAtual.getTime() + prazoEmMilissegundos);
             }
+            parcela.setData_vencimento(dataVencimentoAtual);
+            listaParcelas.add(parcela);
+        }
 
-            // 3. Salva o registro mestre. O CascadeType.ALL se encarrega de realizar o INSERT de todas as parcelas!
-            financeiroDAO.salvar(financeiro);
+        financeiroDAO.salvarParcelas(listaParcelas);
+    }
 
-        } catch (Exception e) {
-            System.err.println("[!] Erro ao processar o lançamento em cascata: " + e.getMessage());
-            throw e;
+    public void atualizarLancamento(Financeiro f) throws Exception {
+        // 1. Atualiza os dados do Lançamento Pai no banco (valor_total, tipo de conta, etc.)
+        financeiroDAO.salvar(f);
+        
+        // 2. Busca as parcelas que já existem associadas a este lançamento
+        List<FinanceiroParcela> parcelasExistentes = financeiroDAO.listarParcelasPorLancamento(f.getId());
+        
+        if (parcelasExistentes != null && !parcelasExistentes.isEmpty()) {
+            // 3. Regra de Negócio: Divide o NOVO valor total pela quantidade de parcelas que já existem
+            double novoValorPorParcela = f.getValor_total() / parcelasExistentes.size();
+            
+            // 4. Varre a lista de parcelas aplicando o novo valor apenas nas que estão em aberto
+            for (FinanceiroParcela parcela : parcelasExistentes) {
+                // Supondo que 1 seja o status "Aberto" (conforme definido no gerenciarNovoLancamento)
+                if (parcela.getStatus() == 1) { 
+                    parcela.setValor_original(novoValorPorParcela);
+                    parcela.setValor_final(novoValorPorParcela);
+                }
+            }
+            
+            // 5. Salva em lote a lista de parcelas com os valores atualizados
+            financeiroDAO.salvarParcelas(parcelasExistentes);
         }
     }
 
-    public List<Financeiro> listarTodasContas() {
-        return financeiroDAO.listarTodos();
+    public void excluirLancamento(int id) throws Exception {
+        financeiroDAO.excluir(id);
     }
 }

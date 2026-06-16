@@ -1,58 +1,52 @@
 package venda.p2.controller;
 
-import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.dao.FornecedorDAO;
 import venda.p2.model.Fornecedor;
+import java.util.List;
 
 public class FornecedorController {
-    // Trocado o DAO específico pelo GenericDAO
-    private GenericDAO<Fornecedor> fornecedorDAO = new GenericDAO<>(Fornecedor.class);
 
-    public String salvar(Fornecedor fornecedor) {
-        
-        if (fornecedor == null) {
-            return "Erro: Objeto fornecedor inválido.";
-        }
-        
-        if (fornecedor.getNomeFantasia() == null || fornecedor.getNomeFantasia().trim().isEmpty()) {
-            return "Erro: O Nome Fantasia é obrigatório.";
-        }
+    private FornecedorDAO fornecedorDAO;
 
-        if (fornecedor.getRazaoSocial() == null || fornecedor.getRazaoSocial().trim().isEmpty()) {
-            return "Erro: A Razão Social é obrigatória.";
-        }
-
-        // Validação simples de CNPJ (pelo menos 14 números)
-        if (fornecedor.getCnpj() == null || fornecedor.getCnpj().replaceAll("\\D", "").length() != 14) {
-            return "Erro: CNPJ inválido. Deve conter 14 dígitos.";
-        }
-
-        try {
-            // O Hibernate cuida do INSERT ou UPDATE de forma transparente
-            fornecedorDAO.salvar(fornecedor);
-            return "Fornecedor '" + fornecedor.getNomeFantasia() + "' cadastrado com sucesso!";
-        } catch (Exception e) {
-            return "Erro ao salvar fornecedor no banco (verifique se o CNPJ já existe).";
-        }
+    public FornecedorController() {
+        this.fornecedorDAO = new FornecedorDAO();
     }
 
-    // Adicionado método para listar todos na JTable da View, se precisar
-    public List<Fornecedor> listarTodos() {
+    public List<Fornecedor> listarTodos() throws Exception {
         return fornecedorDAO.listarTodos();
     }
 
-    // Adicionado método para buscar por ID se for necessário em filtros
-    public Fornecedor buscarPorId(int id) {
+    public Fornecedor buscarPorId(int id) throws Exception {
         return fornecedorDAO.buscarPorId(id);
     }
 
-    // Adicionado método para excluir fornecedor de forma genérica
-    public String excluir(int id) {
-        try {
-            fornecedorDAO.excluir(id);
-            return "Fornecedor excluído com sucesso!";
-        } catch (Exception e) {
-            return "Erro ao excluir: verifique se existem produtos ou compras vinculados a este fornecedor.";
+    public void salvarFornecedor(String nomeFantasia, String razaoSocial, String cnpj) throws Exception {
+        if (nomeFantasia == null || nomeFantasia.trim().isEmpty() || cnpj == null || cnpj.trim().isEmpty()) {
+            throw new Exception("Nome Fantasia e CNPJ são obrigatórios!");
         }
+
+        Fornecedor f = new Fornecedor();
+        f.setNomeFantasia(nomeFantasia.trim());
+        f.setRazaoSocial(razaoSocial.trim());
+        f.setCnpj(cnpj.trim());
+
+        fornecedorDAO.salvar(f);
+    }
+
+    public void atualizarFornecedor(Fornecedor f, String nomeFantasia, String razaoSocial, String cnpj) throws Exception {
+        if (f == null) throw new Exception("Nenhum fornecedor selecionado.");
+        if (nomeFantasia == null || nomeFantasia.trim().isEmpty() || cnpj == null || cnpj.trim().isEmpty()) {
+            throw new Exception("Nome Fantasia e CNPJ são obrigatórios!");
+        }
+
+        f.setNomeFantasia(nomeFantasia.trim());
+        f.setRazaoSocial(razaoSocial.trim());
+        f.setCnpj(cnpj.trim());
+
+        fornecedorDAO.salvar(f);
+    }
+
+    public void excluirFornecedor(int id) throws Exception {
+        fornecedorDAO.excluir(id);
     }
 }

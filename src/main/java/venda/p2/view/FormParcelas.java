@@ -3,10 +3,11 @@ package venda.p2.view;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.controller.FinanceiroParcelaController;
 import venda.p2.model.Financeiro;
 import venda.p2.model.FinanceiroParcela;
 
@@ -19,14 +20,13 @@ public class FormParcelas extends JFrame {
     private JTextField txtDesconto, txtAcrescimo, txtValorFinal;
     private JButton btnBaixa;
 
-    private GenericDAO<Financeiro> financeiroDAO;
-    private GenericDAO<FinanceiroParcela> parcelaDAO;
+    // View conversando estritamente com o Controller da Regra de Negócio
+    private FinanceiroParcelaController parcelaController;
     private FinanceiroParcela parcelaSelecionada;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public FormParcelas() {
-        financeiroDAO = new GenericDAO<>(Financeiro.class);
-        parcelaDAO = new GenericDAO<>(FinanceiroParcela.class);
+        parcelaController = new FinanceiroParcelaController();
 
         setTitle("Gerenciar e Pagar Parcelas");
         setSize(850, 500);
@@ -38,9 +38,7 @@ public class FormParcelas extends JFrame {
         JPanel painelTopo = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         painelTopo.setBorder(BorderFactory.createTitledBorder("Selecionar Lançamento Financeiro"));
         cbContas = new JComboBox<>();
-        atualizarComboContas();
         
-        cbContas.addActionListener(e -> buscarParcelasDaConta());
         painelTopo.add(new JLabel("Conta / Registro:"));
         painelTopo.add(cbContas);
         add(painelTopo, BorderLayout.NORTH);
@@ -78,99 +76,109 @@ public class FormParcelas extends JFrame {
 
         add(painelInferior, BorderLayout.SOUTH);
 
-        // --- EVENTOS ---
-        tabelaParcelas.getSelectionModel().addListSelectionListener(e -> selecionarParcela());
-        btnBaixa.addActionListener(e -> efetuarBaixa());
-    }
+        // --- EVENTOS E LISTENERS ---
 
-    private void atualizarComboContas() {
-        try {
-            cbContas.removeAllItems();
-            listaContas = financeiroDAO.listarTodos();
-            for (Financeiro f : listaContas) {
-                String fluxo = (f.getPagar_ou_receber() == 1) ? "[PAGAR]" : "[RECEBER]";
-                cbContas.addItem(f.getId() + " - " + fluxo + " " + (f.getTipoConta() != null ? f.getTipoConta().getDescricao() : "") + " - R$ " + f.getValor_total());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+        // Evento ao mudar a seleção do JComboBox de Contas (Atualiza Tabela de Parcelas)
+        cbContas.addActionListener(e -> {
+            modeloTabela.setRowCount(0);
+            int index = cbContas.getSelectedIndex();
+            if (index >= 0 && listaContas != null) {
+                Financeiro fSelecionadoOld = listaContas.get(index);
+                try {
+                    // CATCH DA ATUALIZAÇÃO: Busca o Financeiro atualizado direto do banco de dados pelo ID
+                    // Isso garante que alterações feitas em outras telas apareçam aqui na mesma hora!
+                    Financeiro fSelecionado = parcelaController.buscarContaPorId(fSelecionadoOld.getId());
+                    
+                    // Se você tiver algum campo na tela mostrando o valor mestre do lançamento, atualize ele aqui:
+                    // Exemplo: txtValorMestre.setText(String.valueOf(fSelecionado.getValor_total()));
 
-    private void buscarParcelasDaConta() {
-    modeloTabela.setRowCount(0); // Limpa a tabela gráfica
-    int index = cbContas.getSelectedIndex();
-    
-    if (index >= 0) {
-        Financeiro fSelecionado = listaContas.get(index);
-        try {
-            // Busca todas as parcelas cadastradas no banco
-            List<FinanceiroParcela> todas = parcelaDAO.listarTodos();
-            
-            for (FinanceiroParcela p : todas) {
-                // CORREÇÃO AQUI: Garante que estamos comparando os IDs corretamente como int
-                if (p.getFinanceiro() != null && p.getFinanceiro().getId() == fSelecionado.getId()) {
-                    
-                    String statusStr = (p.getStatus() == 1) ? "🔴 Aberta" : "🟢 Paga";
-                    String dtPgto = (p.getData_pagamento() != null) ? sdf.format(p.getData_pagamento()) : "-";
-                    
-                    modeloTabela.addRow(new Object[]{
-                        p.getId(), 
-                        p.getN_parcela(), 
-                        sdf.format(p.getData_vencimento()),
-                        p.getValor_original(), 
-                        statusStr, 
-                        dtPgto, 
-                        p.getValor_final()
-                    });
+                    List<FinanceiroParcela> parcelas = parcelaController.listarParcelasPorConta(fSelecionado.getId());
+                    for (FinanceiroParcela p : parcelas) {
+                        // Correção visual do status: 1 = Aberta (Conforme seu clique na JTable exige status == 1)
+                        String statusStr = (p.getStatus() == 1) ? "🔴 Aberta" : "🟢 Paga";
+                        String dtPgto = (p.getData_pagamento() != null) ? sdf.format(p.getData_pagamento()) : "-";
+                        
+                        modeloTabela.addRow(new Object[]{
+                            p.getId(), 
+                            p.getN_parcela(), 
+                            p.getData_vencimento() != null ? sdf.format(p.getData_vencimento()) : "-",
+                            p.getValor_original(), // Agora exibe o valor da parcela atualizado do banco!
+                            statusStr, 
+                            dtPgto, 
+                            p.getValor_final()
+                        });
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao carregar parcelas atualizadas: " + ex.getMessage());
+                    ex.printStackTrace();
                 }
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar parcelas: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}
+        });
 
-    private void selecionarParcela() {
-        int linha = tabelaParcelas.getSelectedRow();
-        if (linha >= 0) {
-            int id = (int) modeloTabela.getValueAt(linha, 0);
-            try {
-                parcelaSelecionada = parcelaDAO.buscarPorId(id);
-                if (parcelaSelecionada != null && parcelaSelecionada.getStatus() == 1) { // Só permite baixa se estiver aberta
+        // Evento de clique na JTable para recuperar e selecionar a parcela da linha
+        tabelaParcelas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int linha = tabelaParcelas.getSelectedRow();
+                if (linha >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linha, 0);
+                    try {
+                        parcelaSelecionada = parcelaController.buscarParcelaPorId(id);
+                        if (parcelaSelecionada != null && parcelaSelecionada.getStatus() == 1) {
+                            txtDesconto.setText("0.00");
+                            txtAcrescimo.setText("0.00");
+                            txtValorFinal.setText(String.valueOf(parcelaSelecionada.getValor_original()));
+                            btnBaixa.setEnabled(true);
+                        } else {
+                            btnBaixa.setEnabled(false);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(FormParcelas.this, "Erro ao carregar parcela: " + ex.getMessage());
+                    }
+                }
+            }
+        });
+
+        // Ação do Botão Confirmar Baixa
+        btnBaixa.addActionListener(e -> {
+            if (parcelaSelecionada != null) {
+                try {
+                    parcelaController.efetuarBaixa(
+                        parcelaSelecionada, 
+                        txtDesconto.getText(), 
+                        txtAcrescimo.getText()
+                    );
+                    JOptionPane.showMessageDialog(this, "Baixa efetuada com sucesso!");
+                    btnBaixa.setEnabled(false);
+                    
                     txtDesconto.setText("0.00");
                     txtAcrescimo.setText("0.00");
-                    txtValorFinal.setText(String.valueOf(parcelaSelecionada.getValor_original()));
-                    btnBaixa.setEnabled(true);
-                } else {
-                    btnBaixa.setEnabled(false);
+                    txtValorFinal.setText("");
+                    
+                    // Força um gatilho de atualização na tabela recarregando o index do ComboBox
+                    int indexAtual = cbContas.getSelectedIndex();
+                    cbContas.setSelectedIndex(-1);
+                    cbContas.setSelectedIndex(indexAtual);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Insira valores monetários válidos para desconto/acréscimo.");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao processar baixa: " + ex.getMessage());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }
-    }
+        });
 
-    private void efetuarBaixa() {
-        if (parcelaSelecionada != null) {
-            try {
-                double desc = Double.parseDouble(txtDesconto.getText().trim());
-                double acr = Double.parseDouble(txtAcrescimo.getText().trim());
-                double valorFinal = parcelaSelecionada.getValor_original() - desc + acr;
-
-                parcelaSelecionada.setDesconto(desc);
-                parcelaSelecionada.setAcrescimo(acr);
-                parcelaSelecionada.setValor_final(valorFinal);
-                parcelaSelecionada.setData_pagamento(new Date());
-                parcelaSelecionada.setStatus(2); // Muda para Pago
-
-                parcelaDAO.salvar(parcelaSelecionada);
-                JOptionPane.showMessageDialog(this, "Baixa efetuada com sucesso!");
-                btnBaixa.setEnabled(false);
-                buscarParcelasDaConta(); // Atualiza a tabela gráfica
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Erro ao processar baixa: " + e.getMessage());
+        // Carga Inicial do ComboBox de Contas Mestre
+        try {
+            cbContas.removeAllItems();
+            listaContas = parcelaController.listarTodasContas();
+            for (Financeiro f : listaContas) {
+                String fluxo = (f.getPagar_ou_receber() == 1) ? "[PAGAR]" : "[RECEBER]";
+                String descricaoTipo = (f.getTipoConta() != null) ? f.getTipoConta().getDescricao() : "";
+                cbContas.addItem(f.getId() + " - " + fluxo + " " + descricaoTipo + " - R$ " + f.getValor_total());
             }
+            cbContas.setSelectedIndex(-1); // Inicializa limpo sem disparar o listener de cara
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao inicializar lançamentos: " + e.getMessage());
         }
-    }
+    } // <-- Fim do Construtor e fim absoluto do arquivo!
 }

@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.controller.TipoContaController;
 import venda.p2.model.TipoConta;
 
 public class FormTipoConta extends JFrame {
@@ -16,11 +16,12 @@ public class FormTipoConta extends JFrame {
     private JTable tabelaTipos;
     private DefaultTableModel modeloTabela;
 
-    private GenericDAO<TipoConta> tipoContaDAO;
+    // View comunicando-se estritamente com a camada de controle
+    private TipoContaController tipoContaController;
     private TipoConta tipoSelecionado;
 
     public FormTipoConta() {
-        tipoContaDAO = new GenericDAO<>(TipoConta.class);
+        tipoContaController = new TipoContaController();
 
         setTitle("Gerenciar Tipos de Conta (CRUD)");
         setSize(550, 450);
@@ -71,102 +72,95 @@ public class FormTipoConta extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Tipos Cadastrados"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        atualizarTabela();
+        // --- EVENTOS E LISTENERS ---
 
-        // --- EVENTOS ---
+        // Evento de clique na tabela para carregar os campos de texto
         tabelaTipos.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) { preencherCamposPelaTabela(); }
+            public void mouseClicked(MouseEvent e) {
+                int linha = tabelaTipos.getSelectedRow();
+                if (linha >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linha, 0);
+                    try {
+                        tipoSelecionado = tipoContaController.buscarPorId(id);
+                        if (tipoSelecionado != null) {
+                            txtDescricao.setText(tipoSelecionado.getDescricao());
+                            
+                            btnSalvar.setEnabled(false);
+                            btnEditar.setEnabled(true);
+                            btnExcluir.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(FormTipoConta.this, "Erro ao carregar: " + ex.getMessage());
+                    }
+                }
+            }
         });
 
-        btnSalvar.addActionListener(e -> salvarTipo());
-        btnEditar.addActionListener(e -> editarTipo());
-        btnExcluir.addActionListener(e -> excluirTipo());
-        btnLimpar.addActionListener(e -> limparCampos());
-    }
-
-    private void atualizarTabela() {
-        modeloTabela.setRowCount(0);
-        try {
-            List<TipoConta> lista = tipoContaDAO.listarTodos();
-            for (TipoConta tc : lista) {
-                modeloTabela.addRow(new Object[]{tc.getId(), tc.getDescricao()});
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar: " + e.getMessage());
-        }
-    }
-
-    private void preencherCamposPelaTabela() {
-        int linha = tabelaTipos.getSelectedRow();
-        if (linha >= 0) {
-            int id = (int) modeloTabela.getValueAt(linha, 0);
+        // Ação do Botão Salvar Novo
+        btnSalvar.addActionListener(e -> {
             try {
-                tipoSelecionado = tipoContaDAO.buscarPorId(id);
-                if (tipoSelecionado != null) {
-                    txtDescricao.setText(tipoSelecionado.getDescricao());
-                    btnSalvar.setEnabled(false);
-                    btnEditar.setEnabled(true);
-                    btnExcluir.setEnabled(true);
-                }
+                tipoContaController.salvarTipoConta(txtDescricao.getText());
+                JOptionPane.showMessageDialog(this, "Tipo de conta salvo com sucesso!");
+                btnLimpar.doClick();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao carregar: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
-        }
-    }
+        });
 
-    private void salvarTipo() {
-        String desc = txtDescricao.getText().trim();
-        if (desc.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "A descrição é obrigatória!");
-            return;
-        }
-        try {
-            TipoConta tc = new TipoConta();
-            tc.setDescricao(desc);
-            tipoContaDAO.salvar(tc);
-            JOptionPane.showMessageDialog(this, "Tipo de conta salvo com sucesso!");
-            limparCampos();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
-        }
-    }
-
-    private void editarTipo() {
-        String desc = txtDescricao.getText().trim();
-        if (tipoSelecionado != null && !desc.isEmpty()) {
-            try {
-                tipoSelecionado.setDescricao(desc);
-                tipoContaDAO.salvar(tipoSelecionado);
-                JOptionPane.showMessageDialog(this, "Tipo de conta atualizado!");
-                limparCampos();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
-            }
-        }
-    }
-
-    private void excluirTipo() {
-        if (tipoSelecionado != null) {
-            int conf = JOptionPane.showConfirmDialog(this, "Excluir tipo '" + tipoSelecionado.getDescricao() + "'?", "Confirmar", JOptionPane.YES_NO_OPTION);
-            if (conf == JOptionPane.YES_OPTION) {
+        // Ação do Botão Editar (Atualizar)
+        btnEditar.addActionListener(e -> {
+            if (tipoSelecionado != null) {
                 try {
-                    tipoContaDAO.excluir(tipoSelecionado.getId());
-                    JOptionPane.showMessageDialog(this, "Excluído com sucesso!");
-                    limparCampos();
+                    tipoContaController.atualizarTipoConta(tipoSelecionado, txtDescricao.getText());
+                    JOptionPane.showMessageDialog(this, "Tipo de conta atualizado!");
+                    btnLimpar.doClick();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro: Este tipo pode estar sendo usado em alguma conta lançada.");
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        }
-    }
+        });
 
-    private void limparCampos() {
-        txtDescricao.setText("");
-        tipoSelecionado = null;
-        btnSalvar.setEnabled(true);
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
-        atualizarTabela();
-    }
+        // Ação do Botão Excluir
+        btnExcluir.addActionListener(e -> {
+            if (tipoSelecionado != null) {
+                int conf = JOptionPane.showConfirmDialog(this, 
+                    "Excluir tipo '" + tipoSelecionado.getDescricao() + "'?", 
+                    "Confirmar", JOptionPane.YES_NO_OPTION);
+                    
+                if (conf == JOptionPane.YES_OPTION) {
+                    try {
+                        tipoContaController.excluirTipoConta(tipoSelecionado.getId());
+                        JOptionPane.showMessageDialog(this, "Excluído com sucesso!");
+                        btnLimpar.doClick();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Erro: Este tipo pode estar sendo usado em alguma conta lançada.");
+                    }
+                }
+            }
+        });
+
+        // Ação do Botão Limpar / Atualização Gráfica do JTable
+        btnLimpar.addActionListener(e -> {
+            txtDescricao.setText("");
+            tipoSelecionado = null;
+            
+            btnSalvar.setEnabled(true);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+
+            modeloTabela.setRowCount(0);
+            try {
+                List<TipoConta> lista = tipoContaController.listarTodos();
+                for (TipoConta tc : lista) {
+                    modeloTabela.addRow(new Object[]{tc.getId(), tc.getDescricao()});
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao listar: " + ex.getMessage());
+            }
+        });
+
+        // Executa a primeira varredura gráfica para popular a tabela inicial
+        btnLimpar.doClick();
+    } // <-- Fim do Construtor
 }

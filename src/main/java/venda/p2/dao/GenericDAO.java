@@ -75,5 +75,20 @@ public class GenericDAO<T> {
         }
     }
 
-    
+    public T salvarERetornar(T entidade) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            T merged = em.merge(entidade);
+            em.getTransaction().commit();
+            return merged;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
 }

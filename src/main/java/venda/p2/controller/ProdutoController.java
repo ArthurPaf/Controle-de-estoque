@@ -1,55 +1,73 @@
 package venda.p2.controller;
 
-import java.util.List;
+import venda.p2.dao.ProdutoDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.model.Produto;
+import venda.p2.model.Categoria;
+import java.util.List;
 
 public class ProdutoController {
-    // Trocado o DAO específico pelo GenericDAO
-    private GenericDAO<Produto> produtoDAO = new GenericDAO<>(Produto.class);
 
-    public String salvar(Produto produto) {
-        
-        if (produto.getCategoria() == null || produto.getCategoria().getId() <= 0) {
-            return "Erro: O produto deve estar vinculado a uma categoria.";
-        }
+    private ProdutoDAO produtoDAO;
+    private GenericDAO<Categoria> categoriaDAO;
 
-        if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
-            return "Erro: O nome do produto é obrigatório.";
-        }
-
-        try {
-            // O Hibernate salva ou atualiza de acordo com o estado do objeto
-            produtoDAO.salvar(produto);
-            return "Produto '" + produto.getNome() + "' salvo com sucesso!";
-        } catch (Exception e) {
-            return "Erro ao salvar o produto no banco de dados: " + e.getMessage();
-        }
+    public ProdutoController() {
+        this.produtoDAO = new ProdutoDAO();
+        this.categoriaDAO = new GenericDAO<>(Categoria.class);
     }
 
-    // Sistema não pode realizar venda se estoque for inferior a 1 (Mantida a regra intacta)
-    public boolean temEstoqueParaVenda(int produtoId) {
-        Produto p = produtoDAO.buscarPorId(produtoId);
-       
-        return p != null && p.getQuantidade() >= 1;
+    public List<Produto> listarTodos() throws Exception {
+        return produtoDAO.listarTodos();
     }
 
-    public String excluir(int id) {
-        try {
-            produtoDAO.excluir(id);
-            return "Produto excluído!";
-        } catch (Exception e) {
-            // Mantida a mensagem para caso de violação de chave estrangeira (Venda/Compra)
-            return "Erro ao excluir: o produto pode estar vinculado a uma venda/compra.";
-        }
+    public List<Categoria> listarCategorias() throws Exception {
+        return categoriaDAO.listarTodos();
     }
 
-    public Produto pesquisar(int id) {
+    public Produto buscarPorId(int id) throws Exception {
         return produtoDAO.buscarPorId(id);
     }
 
-    // Adicionado o método para preencher a sua JTable de consulta de produtos na View
-    public List<Produto> listarTodos() {
-        return produtoDAO.listarTodos();
+    public void salvarProduto(String nome, String precoStr, String quantidadeStr, Categoria categoria) throws Exception {
+        validarCampos(nome, precoStr, quantidadeStr, categoria);
+
+        Produto p = new Produto();
+        p.setNome(nome.trim());
+        p.setPreco(Double.parseDouble(precoStr.trim()));
+        p.setQuantidade(Double.parseDouble(quantidadeStr.trim()));
+        p.setCategoria(categoria);
+
+        produtoDAO.salvar(p);
+    }
+
+    public void atualizarProduto(Produto p, String nome, String precoStr, String quantidadeStr, Categoria categoria) throws Exception {
+        if (p == null) throw new Exception("Nenhum produto selecionado.");
+        validarCampos(nome, precoStr, quantidadeStr, categoria);
+
+        p.setNome(nome.trim());
+        p.setPreco(Double.parseDouble(precoStr.trim()));
+        p.setQuantidade(Double.parseDouble(quantidadeStr.trim()));
+        p.setCategoria(categoria);
+
+        produtoDAO.salvar(p);
+    }
+
+    public void excluirProduto(int id) throws Exception {
+        produtoDAO.excluir(id);
+    }
+
+    private void validarCampos(String nome, String precoStr, String quantidadeStr, Categoria categoria) throws Exception {
+        if (nome == null || nome.trim().isEmpty() || precoStr == null || precoStr.trim().isEmpty() || quantidadeStr == null || quantidadeStr.trim().isEmpty()) {
+            throw new Exception("Preencha todos os campos obrigatórios!");
+        }
+        if (categoria == null) {
+            throw new Exception("É necessário selecionar uma Categoria válida!");
+        }
+        try {
+            Double.parseDouble(precoStr.trim());
+            Double.parseDouble(quantidadeStr.trim());
+        } catch (NumberFormatException e) {
+            throw new Exception("Preço e Estoque devem ser números válidos.");
+        }
     }
 }

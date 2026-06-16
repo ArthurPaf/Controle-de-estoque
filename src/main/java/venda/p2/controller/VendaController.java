@@ -1,95 +1,119 @@
 package venda.p2.controller;
 
-import org.hibernate.Session;
-import org.hibernate.query.Query;
+import venda.p2.dao.VendaDAO;
 import venda.p2.dao.GenericDAO;
+import venda.p2.dao.ProdutoDAO;
 import venda.p2.model.Venda;
 import venda.p2.model.VendaProduto;
+import venda.p2.model.Cliente;
 import venda.p2.model.Produto;
-import venda.p2.util.JPAUtil;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class VendaController {
 
-    private GenericDAO<Venda> vendaDAO = new GenericDAO<>(Venda.class);
-    private GenericDAO<Produto> produtoDAO = new GenericDAO<>(Produto.class);
+    private VendaDAO vendaDAO;
+    private ProdutoDAO produtoDAO;
+    private GenericDAO<Cliente> clienteDAO;
 
-    public String realizarVenda(Venda venda) {
-        try {
-            // Regra de Negócio: Limite de 3 vendas no mês atual por cliente
-            int totalVendasNoMes = contarVendasMesAtual(venda.getCliente().getId());
+    public VendaController() {
+        this.vendaDAO = new VendaDAO();
+        this.produtoDAO = new ProdutoDAO();
+        this.clienteDAO = new GenericDAO<>(Cliente.class);
+    }
 
-            if (totalVendasNoMes >= 3) {
-                return "Erro: O cliente atingiu o limite de 3 vendas este mês.";
-            }
+    public List<Cliente> listarClientes() throws Exception {
+        return clienteDAO.listarTodos();
+    }
 
-            // Loop de validação e baixa de estoque dos itens da venda
-            for (VendaProduto item : venda.getVendaProdutos()) {
-                Produto p = produtoDAO.buscarPorId(item.getProduto().getId());
+    public List<Produto> listarProdutos() throws Exception {
+        return produtoDAO.listarTodos();
+    }
 
-                if (p == null || p.getQuantidade() < 1) {
-                    return "Erro: Produto " + (p != null ? p.getNome() : "inválido") + " sem estoque disponível (RNF003).";
-                }
-                
-                if (item.getQuantidade() > p.getQuantidade()) {
-                    return "Erro: Estoque insuficiente para o produto " + p.getNome();
-                }
+    public List<Venda> listarHistoricoVendas() throws Exception {
+    return vendaDAO.listarTodasVendas();
+    }
 
-                // Deduz a quantidade vendida e salva o histórico do valor do item
-                double novaQuantidade = p.getQuantidade() - item.getQuantidade();
-                p.setQuantidade(novaQuantidade);
-                p.setValor_ultima_venda(item.getValorUnitario());
+    public List<VendaProduto> listarItensDaVenda(int idVenda) throws Exception {
+    // Retorna os itens específicos de uma venda para mostrar na tabela detalhada
+    return vendaDAO.listarItensPorVenda(idVenda);
+    }
 
-                // O método salvar do GenericDAO faz o papel de dar o update na tabela produto
-                produtoDAO.salvar(p);
-            }
-
-            // Salva a venda mestre (o Hibernate cuida de gerar o ID e salvar a lista cascateada se mapeada com CascadeType.ALL)
-            vendaDAO.salvar(venda); 
-            int idGerado = venda.getId();
-
-            if (idGerado > 0) {
-                return "Venda #" + idGerado + " realizada com sucesso!";
-            } else {
-                return "[!] Erro ao salvar a venda no banco de dados.";
-            }
-        } catch (Exception e) {
-            return "[!] Erro ao processar a venda: " + e.getMessage();
+    public VendaProduto criarItemCarrinho(Produto produto, String quantidadeStr) throws Exception {
+        if (produto == null) {
+            throw new Exception("Selecione um produto válido.");
         }
-    }
-
-    // Método substituto da antiga VendaDAO para contar as vendas usando Hibernate/HQL de forma direta
-    // Método atualizado para usar EntityManager do JPA
-    private int contarVendasMesAtual(int clienteId) {
-        // Pega o EntityManager direto do nosso GenericDAO estruturado acima
-        jakarta.persistence.EntityManager em = venda.p2.dao.GenericDAO.getEntityManager();
-        try {
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
-            java.util.Date inicioMes = cal.getTime();
-            
-            cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
-            java.util.Date fimMes = cal.getTime();
-
-            String hql = "select count(v) from Venda v where v.cliente.id = :clienteId and v.data between :inicioMes and :fimMes";
-            jakarta.persistence.Query query = em.createQuery(hql);
-            query.setParameter("clienteId", clienteId);
-            query.setParameter("inicioMes", inicioMes);
-            query.setParameter("fimMes", fimMes);
-
-            return ((Long) query.getSingleResult()).intValue();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            em.close(); // Sempre fechar o EntityManager para não vazar conexão
+        if (quantidadeStr == null || quantidadeStr.trim().isEmpty()) {
+            throw new Exception("Insira a quantidade do item.");
         }
+
+        double qtd;
+        try {
+            qtd = Double.parseDouble(quantidadeStr.trim());
+        } catch (NumberFormatException e) {
+            throw new Exception("Quantidade inválida.");
+        }
+
+        if (qtd <= 0) {
+            throw new Exception("A quantidade deve ser maior que zero.");
+        }
+        if (qtd > produto.getQuantidade()) {
+            throw new Exception("Estoque insuficiente! Saldo atual: " + produto.getQuantidade());
+        }
+
+        VendaProduto item = new VendaProduto();
+        item.setProduto(produto);
+        item.setQuantidade(qtd);
+        item.setValorUnitario(produto.getPreco());
+
+        return item;
     }
 
-    // Método útil para alimentar histórico de vendas nas JTables das Views
-    public List<Venda> listarTodas() {
-        return vendaDAO.listarTodos();
+    public void finalizarVenda(Cliente cliente, List<VendaProduto> carrinho) throws Exception {
+    if (cliente == null) {
+        throw new Exception("Selecione um cliente válido.");
     }
+    if (carrinho == null || carrinho.isEmpty()) {
+        throw new Exception("Adicione pelo menos um produto para fechar a venda.");
+    }
+
+    // 1. Instancia a venda transiente
+    Venda venda = new Venda();
+    
+    // GARANTIA 1: Garante que o cliente esteja atrelado ao contexto do Hibernate
+    Cliente clienteBD = new GenericDAO<>(Cliente.class).buscarPorId(cliente.getId());
+    if (clienteBD == null) {
+        throw new Exception("Cliente não encontrado no banco de dados.");
+    }
+    venda.setCliente(clienteBD);
+    
+    // Se a sua model Venda exigir uma data ou valor total, defina-os aqui:
+    // venda.setDataVenda(java.time.LocalDate.now());
+
+    // 2. Salva e CAPTURA o objeto gerenciado pelo JPA (que agora possui o ID do banco)
+    Venda vendaSalva = vendaDAO.salvarVenda(venda); 
+
+    // 3. Vincula os itens do carrinho à venda salva
+    for (VendaProduto item : carrinho) {
+        item.setVenda(vendaSalva); // <--- Garante que a FK venda_id não seja null
+
+        // GARANTIA 2: Evita o erro de "null value in column produto_id"
+        // Se o produto veio da View desanexado, reatamos ele ao EntityManager buscando pelo ID
+        Produto prod = new GenericDAO<>(Produto.class).buscarPorId(item.getProduto().getId());
+        if (prod == null) {
+            throw new Exception("Produto " + item.getProduto().getNome() + " não foi encontrado no banco.");
+        }
+        item.setProduto(prod); // Alinha o ID correto para a coluna produto_id
+
+        // Salva o item da venda na tabela venda_produto
+        vendaDAO.salvarItem(item);
+
+        // Atualização de estoque usando o objeto monitorado
+        double estoqueAtualizado = prod.getQuantidade() - item.getQuantidade();
+        prod.setQuantidade(estoqueAtualizado);
+        
+        // Persiste o estoque atualizado
+        new GenericDAO<>(Produto.class).salvar(prod);
+    }
+}
+
 }

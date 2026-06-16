@@ -17,22 +17,22 @@ public class CompraProduto {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "compra_id") 
+    @JoinColumn(name = "compra_id", referencedColumnName = "id", nullable = false)
     private Compra compra;
 
     @ManyToOne
-    @JoinColumn(name = "produto_id") 
+    @JoinColumn(name = "produto_id", referencedColumnName = "id", nullable = false)
     private Produto produto;
 
-    private Double quantidade;
-    private Double valorUnitario;
+    private double quantidade;
+    private double valorUnitario;
 
     
     public CompraProduto() {
     }
 
     
-    public CompraProduto(int id, Compra compra, Produto produto, Double quantidade, Double valorUnitario) {
+    public CompraProduto(int id, Compra compra, Produto produto, double quantidade, double valorUnitario) {
         this.id = id;
         this.compra = compra;
         this.produto = produto;

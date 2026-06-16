@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.controller.ClienteController;
 import venda.p2.model.Cliente;
 
 public class FormCliente extends JFrame {
@@ -16,11 +16,12 @@ public class FormCliente extends JFrame {
     private JTable tabelaClientes;
     private DefaultTableModel modeloTabela;
 
-    private GenericDAO<Cliente> clienteDAO;
+    // View conversa estritamente com o Controller correspondente
+    private ClienteController clienteController;
     private Cliente clienteSelecionado;
 
     public FormCliente() {
-        clienteDAO = new GenericDAO<>(Cliente.class);
+        clienteController = new ClienteController();
 
         setTitle("Gerenciar Clientes (CRUD)");
         setSize(750, 550);
@@ -79,7 +80,6 @@ public class FormCliente extends JFrame {
         add(painelCampos, BorderLayout.NORTH);
 
         // --- 3. TABELA DE CLIENTES (Parte Central/Inferior) ---
-        // Tabela atualizada com as novas colunas
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "RG", "Endereço", "Telefone"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -92,66 +92,37 @@ public class FormCliente extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Clientes Cadastrados"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        atualizarTabela();
+        // --- 4. EVENTOS E AÇÕES DOS BOTÕES (A classe encerra exatamente aqui!) ---
 
-        // --- 4. EVENTOS ---
+        // Evento de clique na tabela para carregar o cliente selecionado do banco
         tabelaClientes.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                preencherCamposPelaTabela();
+                int linhaSelecionada = tabelaClientes.getSelectedRow();
+                if (linhaSelecionada >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
+                    try {
+                        clienteSelecionado = clienteController.buscarPorId(id);
+                        if (clienteSelecionado != null) {
+                            txtNome.setText(clienteSelecionado.getNome());
+                            txtCpf.setText(clienteSelecionado.getCpf());
+                            txtRg.setText(clienteSelecionado.getRg());
+                            txtEndereco.setText(clienteSelecionado.getEndereco());
+                            txtTelefone.setText(clienteSelecionado.getTelefone());
+
+                            btnSalvar.setEnabled(false);
+                            btnEditar.setEnabled(true);
+                            btnExcluir.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(FormCliente.this, "Erro ao carregar dados: " + ex.getMessage());
+                    }
+                }
             }
         });
 
-        btnSalvar.addActionListener(e -> salvarCliente());
-        btnEditar.addActionListener(e -> editarCliente());
-        btnExcluir.addActionListener(e -> excluirCliente());
-        btnLimpar.addActionListener(e -> limparCampos());
-    }
-
-    private void atualizarTabela() {
-        modeloTabela.setRowCount(0);
-        try {
-            List<Cliente> clientes = clienteDAO.listarTodos();
-            for (Cliente c : clientes) {
-                modeloTabela.addRow(new Object[]{
-                    c.getId(),
-                    c.getNome(),
-                    c.getCpf(),
-                    c.getRg(),
-                    c.getEndereco(),
-                    c.getTelefone()
-                });
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar clientes: " + e.getMessage());
-        }
-    }
-
-    private void preencherCamposPelaTabela() {
-        int linhaSelecionada = tabelaClientes.getSelectedRow();
-        if (linhaSelecionada >= 0) {
-            int id = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
-            try {
-                clienteSelecionado = clienteDAO.buscarPorId(id);
-                if (clienteSelecionado != null) {
-                    txtNome.setText(clienteSelecionado.getNome());
-                    txtCpf.setText(clienteSelecionado.getCpf());
-                    txtRg.setText(clienteSelecionado.getRg());
-                    txtEndereco.setText(clienteSelecionado.getEndereco());
-                    txtTelefone.setText(clienteSelecionado.getTelefone());
-
-                    btnSalvar.setEnabled(false);
-                    btnEditar.setEnabled(true);
-                    btnExcluir.setEnabled(true);
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao carregar dados do cliente: " + ex.getMessage());
-            }
-        }
-    }
-
-    private void salvarCliente() {
-        if (validarCampos()) {
+        // Ação do Botão Salvar Novo
+        btnSalvar.addActionListener(e -> {
             try {
                 Cliente c = new Cliente();
                 c.setNome(txtNome.getText().trim());
@@ -160,71 +131,79 @@ public class FormCliente extends JFrame {
                 c.setEndereco(txtEndereco.getText().trim());
                 c.setTelefone(txtTelefone.getText().trim());
 
-                clienteDAO.salvar(c);
+                clienteController.salvarCliente(c);
                 JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!");
-                limparCampos();
+                btnLimpar.doClick();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, ex.getMessage());
             }
-        }
-    }
+        });
 
-    private void editarCliente() {
-        if (clienteSelecionado != null && validarCampos()) {
-            try {
-                clienteSelecionado.setNome(txtNome.getText().trim());
-                clienteSelecionado.setCpf(txtCpf.getText().trim());
-                clienteSelecionado.setRg(txtRg.getText().trim());
-                clienteSelecionado.setEndereco(txtEndereco.getText().trim());
-                clienteSelecionado.setTelefone(txtTelefone.getText().trim());
-
-                clienteDAO.salvar(clienteSelecionado);
-                JOptionPane.showMessageDialog(this, "Cliente atualizado com sucesso!");
-                limparCampos();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao atualizar cliente: " + ex.getMessage());
-            }
-        }
-    }
-
-    private void excluirCliente() {
-        if (clienteSelecionado != null) {
-            int confirmacao = JOptionPane.showConfirmDialog(this, 
-                "Tem certeza que deseja excluir o cliente " + clienteSelecionado.getNome() + "?", 
-                "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-                
-            if (confirmacao == JOptionPane.YES_OPTION) {
+        // Ação do Botão Editar / Atualizar
+        btnEditar.addActionListener(e -> {
+            if (clienteSelecionado != null) {
                 try {
-                    clienteDAO.excluir(clienteSelecionado.getId());
-                    JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso!");
-                    limparCampos();
+                    clienteSelecionado.setNome(txtNome.getText().trim());
+                    clienteSelecionado.setCpf(txtCpf.getText().trim());
+                    clienteSelecionado.setRg(txtRg.getText().trim());
+                    clienteSelecionado.setEndereco(txtEndereco.getText().trim());
+                    clienteSelecionado.setTelefone(txtTelefone.getText().trim());
+
+                    clienteController.salvarCliente(clienteSelecionado);
+                    JOptionPane.showMessageDialog(this, "Cliente atualizado com sucesso!");
+                    btnLimpar.doClick();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
                 }
             }
-        }
-    }
+        });
 
-    private void limparCampos() {
-        txtNome.setText("");
-        txtCpf.setText("");
-        txtRg.setText("");
-        txtEndereco.setText("");
-        txtTelefone.setText("");
-        clienteSelecionado = null;
+        // Ação do Botão Excluir
+        btnExcluir.addActionListener(e -> {
+            if (clienteSelecionado != null) {
+                int confirmacao = JOptionPane.showConfirmDialog(this, 
+                    "Tem certeza que deseja excluir o cliente " + clienteSelecionado.getNome() + "?", 
+                    "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
+                    
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    try {
+                        clienteController.excluirCliente(clienteSelecionado.getId());
+                        JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso!");
+                        btnLimpar.doClick();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage());
+                    }
+                }
+            }
+        });
 
-        btnSalvar.setEnabled(true);
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
+        // Ação do Botão Limpar / Resetar e Atualizar a JTable graficamente
+        btnLimpar.addActionListener(e -> {
+            txtNome.setText("");
+            txtCpf.setText("");
+            txtRg.setText("");
+            txtEndereco.setText("");
+            txtTelefone.setText("");
+            clienteSelecionado = null;
 
-        atualizarTabela();
-    }
+            btnSalvar.setEnabled(true);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
 
-    private boolean validarCampos() {
-        if (txtNome.getText().trim().isEmpty() || txtCpf.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nome e CPF são campos obrigatórios!", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        return true;
+            modeloTabela.setRowCount(0);
+            try {
+                List<Cliente> lista = clienteController.listarClientes();
+                for (Cliente c : lista) {
+                    modeloTabela.addRow(new Object[]{
+                        c.getId(), c.getNome(), c.getCpf(), c.getRg(), c.getEndereco(), c.getTelefone()
+                    });
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao listar clientes: " + ex.getMessage());
+            }
+        });
+
+        // Força a primeira carga na tabela e limpa campos ao abrir a tela
+        btnLimpar.doClick();
     }
 }

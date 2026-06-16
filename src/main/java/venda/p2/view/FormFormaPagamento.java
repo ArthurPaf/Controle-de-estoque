@@ -6,22 +6,23 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import venda.p2.dao.GenericDAO;
+import venda.p2.controller.FormaPagamentoController;
 import venda.p2.model.FormaPagamento;
 
 public class FormFormaPagamento extends JFrame {
 
     private JTextField txtNome, txtParcelas, txtPrazo;
-    private JComboBox<String> cbTipo; // À Vista ou A Prazo
+    private JComboBox<String> cbTipo;
     private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
     private JTable tabelaFormas;
     private DefaultTableModel modeloTabela;
 
-    private GenericDAO<FormaPagamento> formaDAO;
+    // View agora conversa exclusivamente com o Controller específico
+    private FormaPagamentoController formaController;
     private FormaPagamento formaSelecionada;
 
     public FormFormaPagamento() {
-        formaDAO = new GenericDAO<>(FormaPagamento.class);
+        formaController = new FormaPagamentoController();
 
         setTitle("Gerenciar Formas de Pagamento (CRUD)");
         setSize(650, 500);
@@ -84,116 +85,122 @@ public class FormFormaPagamento extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Formas Cadastradas"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        atualizarTabela();
+        // --- EVENTOS E LISTENERS ---
 
-        // --- EVENTOS ---
+        // Evento de clique na JTable para recuperar a forma selecionada
         tabelaFormas.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) { preencherCamposPelaTabela(); }
+            public void mouseClicked(MouseEvent e) {
+                int linha = tabelaFormas.getSelectedRow();
+                if (linha >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linha, 0);
+                    try {
+                        formaSelecionada = formaController.buscarPorId(id);
+                        if (formaSelecionada != null) {
+                            txtNome.setText(formaSelecionada.getNome());
+                            txtParcelas.setText(String.valueOf(formaSelecionada.getQtde_parcela()));
+                            txtPrazo.setText(String.valueOf(formaSelecionada.getPrazo()));
+                            cbTipo.setSelectedIndex(formaSelecionada.getAvista_aprazo() == 1 ? 0 : 1);
+
+                            btnSalvar.setEnabled(false);
+                            btnEditar.setEnabled(true);
+                            btnExcluir.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(FormFormaPagamento.this, "Erro ao carregar: " + ex.getMessage());
+                    }
+                }
+            }
         });
 
-        btnSalvar.addActionListener(e -> salvarForma());
-        btnEditar.addActionListener(e -> editarForma());
-        btnExcluir.addActionListener(e -> excluirForma());
-        btnLimpar.addActionListener(e -> limparCampos());
-    }
-
-    private void atualizarTabela() {
-        modeloTabela.setRowCount(0);
-        try {
-            List<FormaPagamento> lista = formaDAO.listarTodos();
-            for (FormaPagamento f : lista) {
-                String tipoStr = (f.getAvista_aprazo() == 1) ? "À Vista" : "A Prazo";
-                modeloTabela.addRow(new Object[]{f.getId(), f.getNome(), f.getQtde_parcela(), f.getPrazo(), tipoStr});
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar: " + e.getMessage());
-        }
-    }
-
-    private void preencherCamposPelaTabela() {
-        int linha = tabelaFormas.getSelectedRow();
-        if (linha >= 0) {
-            int id = (int) modeloTabela.getValueAt(linha, 0);
+        // Ação do Botão Salvar
+        btnSalvar.addActionListener(e -> {
             try {
-                formaSelecionada = formaDAO.buscarPorId(id);
-                if (formaSelecionada != null) {
-                    txtNome.setText(formaSelecionada.getNome());
-                    txtParcelas.setText(String.valueOf(formaSelecionada.getQtde_parcela()));
-                    txtPrazo.setText(String.valueOf(formaSelecionada.getPrazo()));
-                    cbTipo.setSelectedIndex(formaSelecionada.getAvista_aprazo() == 1 ? 0 : 1);
-
-                    btnSalvar.setEnabled(false);
-                    btnEditar.setEnabled(true);
-                    btnExcluir.setEnabled(true);
-                }
+                formaController.salvarForma(
+                    txtNome.getText(),
+                    txtParcelas.getText(),
+                    txtPrazo.getText(),
+                    cbTipo.getSelectedIndex()
+                );
+                JOptionPane.showMessageDialog(this, "Forma de pagamento salva!");
+                btnLimpar.doClick();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Quantidade de parcelas ou prazo inválidos.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao carregar: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
             }
-        }
-    }
+        });
 
-    private void salvarForma() {
-        if (txtNome.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "O nome é obrigatório!");
-            return;
-        }
-        try {
-            FormaPagamento f = new FormaPagamento();
-            f.setNome(txtNome.getText().trim());
-            f.setQtde_parcela(Integer.parseInt(txtParcelas.getText().trim()));
-            f.setPrazo(Integer.parseInt(txtPrazo.getText().trim()));
-            f.setAvista_aprazo(cbTipo.getSelectedIndex() == 0 ? 1 : 2);
-
-            formaDAO.salvar(f);
-            JOptionPane.showMessageDialog(this, "Forma de pagamento salva!");
-            limparCampos();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
-        }
-    }
-
-    private void editarForma() {
-        if (formaSelecionada != null && !txtNome.getText().trim().isEmpty()) {
-            try {
-                formaSelecionada.setNome(txtNome.getText().trim());
-                formaSelecionada.setQtde_parcela(Integer.parseInt(txtParcelas.getText().trim())); 
-                formaSelecionada.setPrazo(Integer.parseInt(txtPrazo.getText().trim()));
-                formaSelecionada.setAvista_aprazo(cbTipo.getSelectedIndex() == 0 ? 1 : 2);
-
-                formaDAO.salvar(formaSelecionada);
-                JOptionPane.showMessageDialog(this, "Forma de pagamento atualizada!");
-                limparCampos();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
-            }
-        }
-    }
-
-    private void excluirForma() {
-        if (formaSelecionada != null) {
-            int conf = JOptionPane.showConfirmDialog(this, "Excluir " + formaSelecionada.getNome() + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
-            if (conf == JOptionPane.YES_OPTION) {
+        // Ação do Botão Editar (Atualizar)
+        btnEditar.addActionListener(e -> {
+            if (formaSelecionada != null) {
                 try {
-                    formaDAO.excluir(formaSelecionada.getId());
-                    JOptionPane.showMessageDialog(this, "Excluído!");
-                    limparCampos();
+                    formaController.atualizarForma(
+                        formaSelecionada,
+                        txtNome.getText(),
+                        txtParcelas.getText(),
+                        txtPrazo.getText(),
+                        cbTipo.getSelectedIndex()
+                    );
+                    JOptionPane.showMessageDialog(this, "Forma de pagamento actualizada!");
+                    btnLimpar.doClick();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Quantidade de parcelas ou prazo inválidos.");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro: Esta forma de pagamento pode estar vinculada a lançamentos financeiros.");
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
                 }
             }
-        }
-    }
+        });
 
-    private void limparCampos() {
-        txtNome.setText("");
-        txtParcelas.setText("1");
-        txtPrazo.setText("0");
-        cbTipo.setSelectedIndex(0);
-        formaSelecionada = null;
-        btnSalvar.setEnabled(true);
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
-        atualizarTabela();
-    }
+        // Ação do Botão Excluir
+        btnExcluir.addActionListener(e -> {
+            if (formaSelecionada != null) {
+                int conf = JOptionPane.showConfirmDialog(this, 
+                    "Excluir " + formaSelecionada.getNome() + "?", 
+                    "Confirmar", JOptionPane.YES_NO_OPTION);
+                if (conf == JOptionPane.YES_OPTION) {
+                    try {
+                        formaController.excluirForma(formaSelecionada.getId());
+                        JOptionPane.showMessageDialog(this, "Excluído!");
+                        btnLimpar.doClick();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Erro: Esta forma de pagamento pode estar vinculada a lançamentos financeiros.");
+                    }
+                }
+            }
+        });
+
+        // Ação do Botão Limpar / Atualizar Tabela Visualmente
+        btnLimpar.addActionListener(e -> {
+            txtNome.setText("");
+            txtParcelas.setText("1");
+            txtPrazo.setText("0");
+            cbTipo.setSelectedIndex(0);
+            formaSelecionada = null;
+            
+            btnSalvar.setEnabled(true);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+
+            modeloTabela.setRowCount(0);
+            try {
+                List<FormaPagamento> lista = formaController.listarTodas();
+                for (FormaPagamento f : lista) {
+                    String tipoStr = (f.getAvista_aprazo() == 1) ? "À Vista" : "A Prazo";
+                    modeloTabela.addRow(new Object[]{
+                        f.getId(), 
+                        f.getNome(), 
+                        f.getQtde_parcela(), 
+                        f.getPrazo(), 
+                        tipoStr
+                    });
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao listar: " + ex.getMessage());
+            }
+        });
+
+        // Dispara a carga inicial do JTable ao abrir o formulário
+        btnLimpar.doClick();
+    } // <-- Fim do construtor e fechamento absoluto da estrutura da classe!
 }
