@@ -48,4 +48,42 @@ public class VendaDAO {
         em.close();
     }
 }
+
+    public List<Venda> listarVendasPorFiltros(java.time.LocalDate dataInicio, java.time.LocalDate dataFim, Integer idCliente) throws Exception {
+        EntityManager em = GenericDAO.getEntityManager();
+        try {
+            StringBuilder hql = new StringBuilder("SELECT v FROM Venda v JOIN FETCH v.cliente WHERE 1=1 ");
+            
+            // Filtro usando o atributo da classe Java (dataVenda)
+            if (dataInicio != null && dataFim != null) {
+                if (dataInicio.equals(dataFim)) {
+                    hql.append("AND v.dataVenda = :dataInicio ");
+                } else {
+                    hql.append("AND v.dataVenda >= :dataInicio AND v.dataVenda <= :dataFim ");
+                }
+            }
+            
+            if (idCliente != null && idCliente > 0) {
+                hql.append("AND v.cliente.id = :idCliente ");
+            }
+            // Ajustado também aqui na ordenação
+            hql.append("ORDER BY v.dataVenda DESC");
+
+            var query = em.createQuery(hql.toString(), Venda.class);
+            
+            if (dataInicio != null && dataFim != null) {
+                query.setParameter("dataInicio", dataInicio);
+                if (!dataInicio.equals(dataFim)) {
+                    query.setParameter("dataFim", dataFim);
+                }
+            }
+            if (idCliente != null && idCliente > 0) {
+                query.setParameter("idCliente", idCliente);
+            }
+            
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }

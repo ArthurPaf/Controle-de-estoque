@@ -8,6 +8,7 @@ C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\FornecedorProdutoController.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\ProdutoController.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\TipoContaController.java
+C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\UsuarioController.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\VendaController.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\controller\VendaProdutoController.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\CategoriaDAO.java
@@ -21,6 +22,7 @@ C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\GenericDAO.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\ProdutoDAO.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\TipoContaDAO.java
+C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\UsuarioDAO.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\dao\VendaDAO.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\MainMenu.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\Categoria.java
@@ -34,6 +36,7 @@ C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\FornecedorProduto.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\Produto.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\TipoConta.java
+C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\Usuario.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\Venda.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\model\VendaProduto.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\util\JPAUtil.java
@@ -43,6 +46,7 @@ C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormFinanceiro.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormFormaPagamento.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormFornecedor.java
+C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormLogin.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormParcelas.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormProduto.java
 C:\Users\arthu\OneDrive\Documentos\prova\Controle-de-estoque\src\main\java\venda\p2\view\FormTipoConta.java

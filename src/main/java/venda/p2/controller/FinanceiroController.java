@@ -1,5 +1,9 @@
 package venda.p2.controller;
 
+// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import venda.p2.dao.FinanceiroDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.model.Financeiro;
@@ -10,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FinanceiroController {
+
+    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA FINANCEIRO
+    private static final Logger logger = LogManager.getLogger(FinanceiroController.class);
 
     private FinanceiroDAO financeiroDAO;
     private GenericDAO<TipoConta> tipoContaDAO;
@@ -22,27 +29,35 @@ public class FinanceiroController {
     }
 
     public List<TipoConta> listarTiposConta() throws Exception {
+        logger.info("Método listarTiposConta() executado.");
         return tipoContaDAO.listarTodos();
     }
 
     public List<FormaPagamento> listarFormasPagamento() throws Exception {
+        logger.info("Método listarFormasPagamento() executado.");
         return formaPagamentoDAO.listarTodos();
     }
 
     public List<Financeiro> listarLancamentos() throws Exception {
+        logger.info("Método listarLancamentos() executado.");
         return financeiroDAO.listarTodos();
     }
 
     public Financeiro buscarPorId(int id) throws Exception {
+        logger.info("Método buscarPorId() executado para o ID: {}", id);
         return financeiroDAO.buscarPorId(id);
     }
 
     public List<FinanceiroParcela> obterParcelas(int idFinanceiro) throws Exception {
-    return financeiroDAO.listarParcelasPorLancamento(idFinanceiro);
+        logger.info("Método obterParcelas() executado para o Lançamento ID: {}", idFinanceiro);
+        return financeiroDAO.listarParcelasPorLancamento(idFinanceiro);
     }
 
     public void gerenciarNovoLancamento(int tipoMovimentacao, TipoConta tc, FormaPagamento fp, String valorStr) throws Exception {
+        logger.info("Método gerenciarNovoLancamento() iniciado.");
+
         if (valorStr == null || valorStr.trim().isEmpty()) {
+            logger.warn("Tentativa de lançamento com valor em branco/nulo.");
             throw new Exception("Defina o valor do lançamento.");
         }
 
@@ -57,6 +72,7 @@ public class FinanceiroController {
 
         // Salva o pai para obter a ID gerada
         Financeiro fSalvo = financeiroDAO.salvarERetornar(f);
+        logger.info("Lançamento Pai salvo. ID Gerado: {} | Tipo: {}", fSalvo.getId(), (fSalvo.getPagar_ou_receber() == 1 ? "PAGAR" : "RECEBER"));
 
         // Regra de Negócio: Desmembramento e cálculo temporal das parcelas
         int qtdParcelas = (fp != null && fp.getQtde_parcela() > 0) ? fp.getQtde_parcela() : 1;
@@ -79,37 +95,60 @@ public class FinanceiroController {
             }
             parcela.setData_vencimento(dataVencimentoAtual);
             listaParcelas.add(parcela);
+            
+            logger.info("Gerando Parcela {}/{} | Vencimento: {} | Valor: R$ {}", i, qtdParcelas, dataVencimentoAtual, valorPorParcela);
         }
 
-        financeiroDAO.salvarParcelas(listaParcelas);
+        try {
+            financeiroDAO.salvarParcelas(listaParcelas);
+            logger.info("Lote com {} parcelas salvo com sucesso para o Lançamento ID: {}.", qtdParcelas, fSalvo.getId());
+        } catch (Exception e) {
+            logger.error("Erro ao salvar parcelas do lançamento ID {}: {}", fSalvo.getId(), e.getMessage());
+            throw e;
+        }
     }
 
     public void atualizarLancamento(Financeiro f) throws Exception {
-        // 1. Atualiza os dados do Lançamento Pai no banco (valor_total, tipo de conta, etc.)
-        financeiroDAO.salvar(f);
+        logger.info("Método atualizarLancamento() executado para o Lançamento ID: {}", f.getId());
         
-        // 2. Busca as parcelas que já existem associadas a este lançamento
-        List<FinanceiroParcela> parcelasExistentes = financeiroDAO.listarParcelasPorLancamento(f.getId());
-        
-        if (parcelasExistentes != null && !parcelasExistentes.isEmpty()) {
-            // 3. Regra de Negócio: Divide o NOVO valor total pela quantidade de parcelas que já existem
-            double novoValorPorParcela = f.getValor_total() / parcelasExistentes.size();
+        try {
+            // 1. Atualiza os dados do Lançamento Pai no banco
+            financeiroDAO.salvar(f);
             
-            // 4. Varre a lista de parcelas aplicando o novo valor apenas nas que estão em aberto
-            for (FinanceiroParcela parcela : parcelasExistentes) {
-                // Supondo que 1 seja o status "Aberto" (conforme definido no gerenciarNovoLancamento)
-                if (parcela.getStatus() == 1) { 
-                    parcela.setValor_original(novoValorPorParcela);
-                    parcela.setValor_final(novoValorPorParcela);
+            // 2. Busca as parcelas que já existem associadas a este lançamento
+            List<FinanceiroParcela> parcelasExistentes = financeiroDAO.listarParcelasPorLancamento(f.getId());
+            
+            if (parcelasExistentes != null && !parcelasExistentes.isEmpty()) {
+                // 3. Regra de Negócio: Divide o NOVO valor total pela quantidade de parcelas que já existem
+                double novoValorPorParcela = f.getValor_total() / parcelasExistentes.size();
+                logger.info("Recalculando parcelas existentes. Nova cota por parcela: R$ {}", novoValorPorParcela);
+                
+                // 4. Varre a lista de parcelas aplicando o novo valor apenas nas que estão em aberto
+                for (FinanceiroParcela parcela : parcelasExistentes) {
+                    if (parcela.getStatus() == 1) { 
+                        parcela.setValor_original(novoValorPorParcela);
+                        parcela.setValor_final(novoValorPorParcela);
+                    }
                 }
+                
+                // 5. Salva em lote a lista de parcelas com os valores atualizados
+                financeiroDAO.salvarParcelas(parcelasExistentes);
+                logger.info("Valores das parcelas atualizados com sucesso no banco.");
             }
-            
-            // 5. Salva em lote a lista de parcelas com os valores atualizados
-            financeiroDAO.salvarParcelas(parcelasExistentes);
+        } catch (Exception e) {
+            logger.error("Erro ao atualizar lançamento/parcelas ID {}: {}", f.getId(), e.getMessage());
+            throw e;
         }
     }
 
     public void excluirLancamento(int id) throws Exception {
-        financeiroDAO.excluir(id);
+        logger.info("Método excluirLancamento() executado para o ID: {}", id);
+        try {
+            financeiroDAO.excluir(id);
+            logger.info("Lançamento ID: {} e suas respectivas parcelas foram excluídos.", id);
+        } catch (Exception e) {
+            logger.error("Erro ao excluir lançamento ID {}: {}", id, e.getMessage());
+            throw e;
+        }
     }
 }

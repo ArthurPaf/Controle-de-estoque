@@ -9,6 +9,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,7 @@ public class Compra {
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private int id;
     
+    @Column(name = "data_compra")
     private LocalDate dataCompra;
     private Double valorTotal;
 

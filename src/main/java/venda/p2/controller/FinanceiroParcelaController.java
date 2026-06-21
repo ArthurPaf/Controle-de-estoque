@@ -1,5 +1,9 @@
 package venda.p2.controller;
 
+// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import venda.p2.dao.FinanceiroParcelaDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.model.Financeiro;
@@ -10,6 +14,9 @@ import java.util.Date;
 
 public class FinanceiroParcelaController {
 
+    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA AS PARCELAS
+    private static final Logger logger = LogManager.getLogger(FinanceiroParcelaController.class);
+
     private FinanceiroParcelaDAO parcelaDAO;
     private GenericDAO<Financeiro> financeiroDAO;
 
@@ -19,20 +26,24 @@ public class FinanceiroParcelaController {
     }
 
     public List<Financeiro> listarTodasContas() throws Exception {
+        logger.info("Método listarTodasContas() executado.");
         return financeiroDAO.listarTodos();
     }
 
     public FinanceiroParcela buscarParcelaPorId(int id) throws Exception {
+        logger.info("Método buscarParcelaPorId() executado para o ID: {}", id);
         return parcelaDAO.buscarPorId(id);
     }
 
     public Financeiro buscarContaPorId(int id) throws Exception {
-    // Chama o método buscarPorId do seu FinanceiroDAO
+        logger.info("Método buscarContaPorId() executado para o ID: {}", id);
         return financeiroDAO.buscarPorId(id); 
     }
 
     // Filtra as parcelas pertencentes a um lançamento específico
     public List<FinanceiroParcela> listarParcelasPorConta(int financeiroId) throws Exception {
+        logger.info("Método listarParcelasPorConta() executado para o Lançamento ID: {}", financeiroId);
+        
         List<FinanceiroParcela> todas = parcelaDAO.listarTodos();
         List<FinanceiroParcela> filtradas = new ArrayList<>();
         
@@ -46,19 +57,39 @@ public class FinanceiroParcelaController {
 
     // Executa as regras de negócio para a baixa
     public void efetuarBaixa(FinanceiroParcela p, String descontoStr, String acrescimoStr) throws Exception {
-        if (p == null) throw new Exception("Nenhuma parcela selecionada.");
-        if (p.getStatus() != 1) throw new Exception("Esta parcela já se encontra baixada.");
+        logger.info("Método efetuarBaixa() iniciado.");
 
-        double desc = Double.parseDouble(descontoStr.trim());
-        double acr = Double.parseDouble(acrescimoStr.trim());
-        double valorFinal = p.getValor_original() - desc + acr;
+        if (p == null) {
+            logger.warn("Tentativa de baixa abortada: nenhuma parcela informada.");
+            throw new Exception("Nenhuma parcela selecionada.");
+        }
+        if (p.getStatus() != 1) {
+            logger.warn("Tentativa de baixa recusada: Parcela ID {} já está baixada (Status: {}).", p.getId(), p.getStatus());
+            throw new Exception("Esta parcela já se encontra baixada.");
+        }
 
-        p.setDesconto(desc);
-        p.setAcrescimo(acr);
-        p.setValor_final(valorFinal);
-        p.setData_pagamento(new Date());
-        p.setStatus(2); // Código 2 para "Pago/Baixado"
+        try {
+            double desc = Double.parseDouble(descontoStr.trim());
+            double acr = Double.parseDouble(acrescimoStr.trim());
+            double valorFinal = p.getValor_original() - desc + acr;
 
-        parcelaDAO.salvar(p);
+            p.setDesconto(desc);
+            p.setAcrescimo(acr);
+            p.setValor_final(valorFinal);
+            p.setData_pagamento(new Date());
+            p.setStatus(2); // Código 2 para "Pago/Baixado"
+
+            parcelaDAO.salvar(p);
+            
+            logger.info("MOVIMENTAÇÃO FINANCEIRA - Parcela ID: {} baixada com sucesso. Valor Original: R$ {} | Desconto: R$ {} | Acréscimo: R$ {} | Valor Final Pago: R$ {}", 
+                        p.getId(), p.getValor_original(), desc, acr, valorFinal);
+
+        } catch (NumberFormatException e) {
+            logger.error("Falha ao converter valores de desconto ('{}') ou acréscimo ('{}') para número.", descontoStr, acrescimoStr);
+            throw new Exception("Valores informados para desconto ou acréscimo são inválidos.");
+        } catch (Exception e) {
+            logger.error("Erro crítico ao salvar a baixa da parcela ID {}: {}", p.getId(), e.getMessage());
+            throw e;
+        }
     }
 }

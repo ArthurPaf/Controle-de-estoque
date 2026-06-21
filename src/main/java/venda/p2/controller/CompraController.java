@@ -1,14 +1,22 @@
 package venda.p2.controller;
 
+// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import venda.p2.dao.CompraDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.model.Compra;
 import venda.p2.model.CompraProduto;
 import venda.p2.model.Produto;
-import venda.p2.model.Fornecedor; // Importante: importando o modelo do Fornecedor
+import venda.p2.model.Fornecedor;
+import java.time.LocalDate;
 import java.util.List;
 
 public class CompraController {
+
+    // 2. DECLARAÇÃO DO LOGGER
+    private static final Logger logger = LogManager.getLogger(CompraController.class);
 
     private CompraDAO compraDAO;
     private GenericDAO<Produto> produtoDAO;
@@ -22,7 +30,6 @@ public class CompraController {
         return produtoDAO.listarTodos();
     }
 
-    // Método essencial para preencher o JComboBox na View
     public List<Fornecedor> listarFornecedores() throws Exception {
         return new GenericDAO<>(Fornecedor.class).listarTodos();
     }
@@ -33,6 +40,13 @@ public class CompraController {
 
     public List<CompraProduto> listarItensDaCompra(int idCompra) throws Exception {
         return compraDAO.listarItensPorCompra(idCompra);
+    }
+
+    // --- ADICIONADO: Método que conecta a View de Compras com os filtros do DAO ---
+    public List<Compra> consultarComprasComFiltros(LocalDate dataInicio, LocalDate dataFim, Integer idFornecedor) throws Exception {
+        // LOG ADICIONADO
+        logger.info("Método consultarComprasComFiltros() executado.");
+        return compraDAO.consultarComprasComFiltros(dataInicio, dataFim, idFornecedor);
     }
 
     public CompraProduto criarItemCarrinho(Produto produto, String quantidadeStr, String precoCustoStr) throws Exception {
@@ -46,6 +60,8 @@ public class CompraController {
             qtd = Double.parseDouble(quantidadeStr.trim());
             precoCusto = Double.parseDouble(precoCustoStr.trim());
         } catch (NumberFormatException e) {
+            // LOG ADICIONADO
+            logger.warn("Tentativa de adicionar item com valores numéricos inválidos na Compra.");
             throw new Exception("Valores numéricos inválidos.");
         }
 
@@ -59,56 +75,62 @@ public class CompraController {
         return item;
     }
 
-    // Ajustado para receber o Fornecedor selecionado na tela
     public void finalizarCompra(Fornecedor fornecedor, List<CompraProduto> carrinho) throws Exception {
-    if (fornecedor == null) {
-        throw new Exception("Selecione um fornecedor válido.");
+        // LOG ADICIONADO
+        logger.info("Método finalizarCompra() executado.");
+
+        if (fornecedor == null) {
+            throw new Exception("Selecione um fornecedor válido.");
+        }
+        if (carrinho == null || carrinho.isEmpty()) {
+            throw new Exception("Adicione pelo menos um produto para fechar a compra.");
+        }
+
+        try {
+            Compra compra = new Compra();
+            
+            Fornecedor fornecedorBD = new GenericDAO<>(Fornecedor.class).buscarPorId(fornecedor.getId());
+            if (fornecedorBD == null) {
+                throw new Exception("Fornecedor não encontrado no banco de dados.");
+            }
+            compra.setFornecedor(fornecedorBD); 
+            compra.setDataCompra(java.time.LocalDate.now());
+
+            double total = 0;
+            for (CompraProduto item : carrinho) {
+                total += item.getValorUnitario() * item.getQuantidade();
+            }
+            compra.setValorTotal(total);
+
+            Compra compraSalva = compraDAO.salvarCompra(compra);
+
+            // LOG ADICIONADO
+            logger.info("Cabeçalho da compra salvo. ID: {}, Valor Total: {}", compraSalva.getId(), total);
+
+            for (CompraProduto item : carrinho) {
+                item.setCompra(compraSalva);
+                
+                Produto prod = new GenericDAO<>(Produto.class).buscarPorId(item.getProduto().getId());
+                item.setProduto(prod);
+
+                compraDAO.salvarItem(item);
+
+                double estoqueAtualizado = prod.getQuantidade() + item.getQuantidade();
+                prod.setQuantidade(estoqueAtualizado);
+
+                new GenericDAO<>(Produto.class).salvar(prod);
+
+                // LOG ADICIONADO
+                logger.info("Estoque atualizado (entrada) para o produto ID: {}. Novo saldo: {}", prod.getId(), estoqueAtualizado);
+            }
+            
+            // LOG ADICIONADO
+            logger.info("Compra ID: {} finalizada com sucesso.", compraSalva.getId());
+
+        } catch (Exception ex) {
+            // LOG ADICIONADO
+            logger.error("Erro ao finalizar a compra: {}", ex.getMessage());
+            throw ex;
+        }
     }
-    if (carrinho == null || carrinho.isEmpty()) {
-        throw new Exception("Adicione pelo menos um produto para fechar a compra.");
-    }
-
-    // 1. Cria e persiste a Compra mestre vinculando o fornecedor
-    Compra compra = new Compra();
-    
-    // GARANTIA: Busca a instância oficial monitorada pelo Hibernate usando o ID do fornecedor
-    Fornecedor fornecedorBD = new GenericDAO<>(Fornecedor.class).buscarPorId(fornecedor.getId());
-    if (fornecedorBD == null) {
-        throw new Exception("Fornecedor não encontrado no banco de dados.");
-    }
-    compra.setFornecedor(fornecedorBD); 
-    
-    // Define a data da compra (conforme o insert do banco exige 'dataCompra')
-    // CORREÇÃO: Passa a data atual usando LocalDate
-    compra.setDataCompra(java.time.LocalDate.now());
-
-    // Calcula o valor total da nota
-    double total = 0;
-    for (CompraProduto item : carrinho) {
-        total += item.getValorUnitario() * item.getQuantidade();
-    }
-    compra.setValorTotal(total);
-
-    // Salva e recupera a instância com o ID gerado pelo banco
-    Compra compraSalva = compraDAO.salvarCompra(compra);
-
-    // 2. Varre os itens adicionando ao estoque e vinculando a FK
-    for (CompraProduto item : carrinho) {
-        item.setCompra(compraSalva);
-        
-        // GARANTIA: Da mesma forma que o fornecedor, certifique-se de que o Produto 
-        // associado ao item é uma instância válida e monitorada do banco
-        Produto prod = new GenericDAO<>(Produto.class).buscarPorId(item.getProduto().getId());
-        item.setProduto(prod);
-
-        compraDAO.salvarItem(item);
-
-        // Regra de Negócio: Soma a quantidade comprada ao estoque atual
-        double estoqueAtualizado = prod.getQuantidade() + item.getQuantidade();
-        prod.setQuantidade(estoqueAtualizado);
-
-        // Salva o produto atualizado
-        new GenericDAO<>(Produto.class).salvar(prod);
-    }
-}
 }

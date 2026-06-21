@@ -1,5 +1,9 @@
 package venda.p2.controller;
 
+// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import venda.p2.dao.VendaDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.dao.ProdutoDAO;
@@ -10,6 +14,9 @@ import venda.p2.model.Produto;
 import java.util.List;
 
 public class VendaController {
+
+    // 2. DECLARAÇÃO DO LOGGER
+    private static final Logger logger = LogManager.getLogger(VendaController.class);
 
     private VendaDAO vendaDAO;
     private ProdutoDAO produtoDAO;
@@ -30,12 +37,33 @@ public class VendaController {
     }
 
     public List<Venda> listarHistoricoVendas() throws Exception {
-    return vendaDAO.listarTodasVendas();
+        return vendaDAO.listarTodasVendas();
+    }
+
+    public List<Venda> consultarVendasComFiltros(java.time.LocalDate dataInicio, java.time.LocalDate dataFim, Integer idCliente) throws Exception {
+        // LOG ADICIONADO
+        logger.info("Método consultarVendasComFiltros() executado.");
+
+        if ((dataInicio != null && dataFim == null) || (dataInicio == null && dataFim != null)) {
+            // LOG ADICIONADO
+            logger.warn("Tentativa de filtro com período incompleto.");
+            throw new Exception("Para filtrar por período, você deve informar a Data Inicial E a Data Final.");
+        }
+
+        // --- BLINDAGEM COMPATÍVEL COM LOCALDATE ---
+        // Se o usuário digitou ao contrário, o sistema inverte sozinho
+        if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
+            java.time.LocalDate provisoria = dataInicio;
+            dataInicio = dataFim;
+            dataFim = provisoria;
+        }
+
+        // Envia as instâncias puras de LocalDate diretamente para o seu DAO atualizado
+        return vendaDAO.listarVendasPorFiltros(dataInicio, dataFim, idCliente);
     }
 
     public List<VendaProduto> listarItensDaVenda(int idVenda) throws Exception {
-    // Retorna os itens específicos de uma venda para mostrar na tabela detalhada
-    return vendaDAO.listarItensPorVenda(idVenda);
+        return vendaDAO.listarItensPorVenda(idVenda);
     }
 
     public VendaProduto criarItemCarrinho(Produto produto, String quantidadeStr) throws Exception {
@@ -57,6 +85,8 @@ public class VendaController {
             throw new Exception("A quantidade deve ser maior que zero.");
         }
         if (qtd > produto.getQuantidade()) {
+            // LOG ADICIONADO
+            logger.warn("Tentativa de adicionar item ao carrinho com estoque insuficiente.");
             throw new Exception("Estoque insuficiente! Saldo atual: " + produto.getQuantidade());
         }
 
@@ -69,51 +99,77 @@ public class VendaController {
     }
 
     public void finalizarVenda(Cliente cliente, List<VendaProduto> carrinho) throws Exception {
-    if (cliente == null) {
-        throw new Exception("Selecione um cliente válido.");
-    }
-    if (carrinho == null || carrinho.isEmpty()) {
-        throw new Exception("Adicione pelo menos um produto para fechar a venda.");
-    }
+        // LOG ADICIONADO
+        logger.info("Método finalizarVenda() executado.");
 
-    // 1. Instancia a venda transiente
-    Venda venda = new Venda();
-    
-    // GARANTIA 1: Garante que o cliente esteja atrelado ao contexto do Hibernate
-    Cliente clienteBD = new GenericDAO<>(Cliente.class).buscarPorId(cliente.getId());
-    if (clienteBD == null) {
-        throw new Exception("Cliente não encontrado no banco de dados.");
-    }
-    venda.setCliente(clienteBD);
-    
-    // Se a sua model Venda exigir uma data ou valor total, defina-os aqui:
-    // venda.setDataVenda(java.time.LocalDate.now());
-
-    // 2. Salva e CAPTURA o objeto gerenciado pelo JPA (que agora possui o ID do banco)
-    Venda vendaSalva = vendaDAO.salvarVenda(venda); 
-
-    // 3. Vincula os itens do carrinho à venda salva
-    for (VendaProduto item : carrinho) {
-        item.setVenda(vendaSalva); // <--- Garante que a FK venda_id não seja null
-
-        // GARANTIA 2: Evita o erro de "null value in column produto_id"
-        // Se o produto veio da View desanexado, reatamos ele ao EntityManager buscando pelo ID
-        Produto prod = new GenericDAO<>(Produto.class).buscarPorId(item.getProduto().getId());
-        if (prod == null) {
-            throw new Exception("Produto " + item.getProduto().getNome() + " não foi encontrado no banco.");
+        if (cliente == null) {
+            throw new Exception("Selecione um cliente válido.");
         }
-        item.setProduto(prod); // Alinha o ID correto para a coluna produto_id
+        if (carrinho == null || carrinho.isEmpty()) {
+            throw new Exception("Adicione pelo menos um produto para fechar a venda.");
+        }
 
-        // Salva o item da venda na tabela venda_produto
-        vendaDAO.salvarItem(item);
+        try {
+            // 1. Instancia a venda transiente
+            Venda venda = new Venda();
+            
+            // GARANTIA 1: Garante que o cliente esteja atrelado ao contexto do Hibernate
+            Cliente clienteBD = new GenericDAO<>(Cliente.class).buscarPorId(cliente.getId());
+            if (clienteBD == null) {
+                throw new Exception("Cliente não encontrado no banco de dados.");
+            }
+            venda.setCliente(clienteBD);
+            
+            // --- CORREÇÃO 1: INJETANDO A DATA ATUAL ---
+            venda.setDataVenda(java.time.LocalDate.now()); 
+            // Nota: Se na sua classe Venda o método for setData(LocalDate), mude para venda.setData(...);
 
-        // Atualização de estoque usando o objeto monitorado
-        double estoqueAtualizado = prod.getQuantidade() - item.getQuantidade();
-        prod.setQuantidade(estoqueAtualizado);
-        
-        // Persiste o estoque atualizado
-        new GenericDAO<>(Produto.class).salvar(prod);
+            // --- CORREÇÃO 2: CALCULANDO O VALOR TOTAL DA VENDA ---
+            double total = 0;
+            for (VendaProduto item : carrinho) {
+                total += item.getValorUnitario() * item.getQuantidade();
+            }
+            venda.setValorTotal(total);
+            // Nota: Se na sua classe Venda o método for setValor_total(total), mude para refletir a model.
+
+            // 2. Salva e CAPTURA o objeto gerenciado pelo JPA
+            Venda vendaSalva = vendaDAO.salvarVenda(venda); 
+
+            // LOG ADICIONADO
+            logger.info("Cabeçalho da venda salvo. ID: {}, Valor Total: {}", vendaSalva.getId(), total);
+
+            // 3. Vincula os itens do carrinho à venda salva
+            for (VendaProduto item : carrinho) {
+                item.setVenda(vendaSalva); // <--- Garante que a FK venda_id não seja null
+
+                // GARANTIA 2: Evita o erro de "null value in column produto_id"
+                Produto prod = new GenericDAO<>(Produto.class).buscarPorId(item.getProduto().getId());
+                if (prod == null) {
+                    throw new Exception("Produto " + item.getProduto().getNome() + " não foi encontrado no banco.");
+                }
+                item.setProduto(prod); // Alinha o ID correto para a coluna produto_id
+
+                // Salva o item da venda na tabela venda_produto
+                vendaDAO.salvarItem(item);
+
+                // Atualização de estoque usando o objeto monitorado
+                double estoqueAtualizado = prod.getQuantidade() - item.getQuantidade();
+                prod.setQuantidade(estoqueAtualizado);
+                
+                // Persiste o estoque atualizado
+                new GenericDAO<>(Produto.class).salvar(prod);
+
+                // LOG ADICIONADO
+                logger.info("Estoque atualizado para o produto ID: {}. Novo saldo: {}", prod.getId(), estoqueAtualizado);
+            }
+            
+            // LOG ADICIONADO
+            logger.info("Venda ID: {} finalizada com sucesso.", vendaSalva.getId());
+
+        } catch (Exception ex) {
+            // LOG ADICIONADO
+            logger.error("Erro ao finalizar a venda: {}", ex.getMessage());
+            throw ex;
+        }
     }
-}
-
 }

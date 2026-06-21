@@ -2,27 +2,33 @@ package venda.p2.view;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import venda.p2.controller.CompraController;
 import venda.p2.model.Produto;
 import venda.p2.model.Compra;
 import venda.p2.model.CompraProduto;
-import venda.p2.model.Fornecedor; // Import do modelo de fornecedor adicionado
+import venda.p2.model.Fornecedor;
 
 public class FormCompra extends JFrame {
 
-    // Aba 1
-    private JComboBox<Fornecedor> cbFornecedor; // Adicionado para corrigir o erro do Banco
+    // Componentes da Aba 1
+    private JComboBox<Fornecedor> cbFornecedor; 
     private JComboBox<Produto> cbProduto;
     private JTextField txtQuantidade, txtPrecoCusto, txtTotalGeral;
     private JButton btnAdicionar, btnRemoverItem, btnFinalizar;
     private JTable tabelaItens;
     private DefaultTableModel modeloTabela;
 
-    // Aba 2
+    // Componentes da Aba 2 (Filtros Avançados e Tabelas)
+    private JFormattedTextField txtFiltroDataInicio;
+    private JFormattedTextField txtFiltroDataFim;
+    private JComboBox<Object> cbFiltroFornecedor; // Aceita String "Todos" e Objetos Fornecedor
+    private JButton btnPesquisarFiltro;
     private JTable tabelaHistoricoCompras;
     private DefaultTableModel modeloHistoricoCompras;
     private JTable tabelaDetalhesItens;
@@ -37,7 +43,7 @@ public class FormCompra extends JFrame {
         listaItensCarrinho = new ArrayList<>();
 
         setTitle("Módulo de Compras (Entrada de Estoque & Histórico)");
-        setSize(900, 650);
+        setSize(950, 700);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -51,11 +57,9 @@ public class FormCompra extends JFrame {
         JPanel painelCabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         painelCabecalho.setBorder(BorderFactory.createTitledBorder("Informações da Nota"));
         
-        // Configuração do JComboBox de Fornecedores na tela
         cbFornecedor = new JComboBox<>();
         painelCabecalho.add(new JLabel("Fornecedor:"));
         painelCabecalho.add(cbFornecedor);
-        
         painelCabecalho.add(new JLabel("Data da Entrada: " + LocalDate.now()));
 
         JPanel painelProdutos = new JPanel(new GridBagLayout());
@@ -117,11 +121,66 @@ public class FormCompra extends JFrame {
         painelNovaCompra.add(painelInferior, BorderLayout.SOUTH);
 
         // =========================================================================
-        // ABA 2: HISTÓRICO DE COMPRAS
+        // ABA 2: HISTÓRICO DE COMPRAS (PAINEL DE FILTROS APLICADO COM COMPORTAMENTO)
         // =========================================================================
-        JPanel painelHistorico = new JPanel(new GridLayout(2, 1, 0, 10));
+        JPanel painelAbaHistoricoCompleta = new JPanel(new BorderLayout());
 
-        // Adicionado a coluna "Fornecedor" para deixar o histórico informativo
+        JPanel painelFiltrosPesquisa = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 10));
+        painelFiltrosPesquisa.setBorder(BorderFactory.createTitledBorder("Filtros de Pesquisa (Período & Fornecedor)"));
+
+        try {
+            MaskFormatter mascaraData = new MaskFormatter("##/##/####");
+            mascaraData.setPlaceholderCharacter('_');
+            txtFiltroDataInicio = new JFormattedTextField(mascaraData);
+            txtFiltroDataFim = new JFormattedTextField(mascaraData);
+
+            // Reverte em caso de digitação parcial
+            txtFiltroDataInicio.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+            txtFiltroDataFim.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+
+            // Listeners para manter as barrinhas estruturadas visíveis se apagar tudo
+            txtFiltroDataInicio.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    String limpo = txtFiltroDataInicio.getText().replace("/", "").replace("_", "").trim();
+                    if (limpo.isEmpty()) {
+                        txtFiltroDataInicio.setValue(null);
+                    }
+                }
+            });
+
+            txtFiltroDataFim.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    String limpo = txtFiltroDataFim.getText().replace("/", "").replace("_", "").trim();
+                    if (limpo.isEmpty()) {
+                        txtFiltroDataFim.setValue(null);
+                    }
+                }
+            });
+
+        } catch (Exception ex) {
+            txtFiltroDataInicio = new JFormattedTextField();
+            txtFiltroDataFim = new JFormattedTextField();
+        }
+
+        txtFiltroDataInicio.setColumns(8);
+        txtFiltroDataFim.setColumns(8);
+        cbFiltroFornecedor = new JComboBox<>();
+        btnPesquisarFiltro = new JButton("Pesquisar / Filtrar 🔍");
+
+        painelFiltrosPesquisa.add(new JLabel("Data Início:"));
+        painelFiltrosPesquisa.add(txtFiltroDataInicio);
+        painelFiltrosPesquisa.add(new JLabel("Data Fim:"));
+        painelFiltrosPesquisa.add(txtFiltroDataFim);
+        painelFiltrosPesquisa.add(new JLabel("Fornecedor:"));
+        painelFiltrosPesquisa.add(cbFiltroFornecedor);
+        painelFiltrosPesquisa.add(btnPesquisarFiltro);
+
+        painelAbaHistoricoCompleta.add(painelFiltrosPesquisa, BorderLayout.NORTH);
+
+        JPanel painelTabelasHistorico = new JPanel(new GridLayout(2, 1, 0, 10));
+
         modeloHistoricoCompras = new DefaultTableModel(new Object[]{"ID Nota / Compra", "Fornecedor", "Data de Registro"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -129,7 +188,7 @@ public class FormCompra extends JFrame {
         tabelaHistoricoCompras = new JTable(modeloHistoricoCompras);
         JScrollPane scrollHistorico = new JScrollPane(tabelaHistoricoCompras);
         scrollHistorico.setBorder(BorderFactory.createTitledBorder("Notas de Compra Recebidas"));
-        painelHistorico.add(scrollHistorico);
+        painelTabelasHistorico.add(scrollHistorico);
 
         modeloDetalhesItens = new DefaultTableModel(new Object[]{"Produto", "Preço de Custo Un.", "Qtd Recebida"}, 0) {
             @Override
@@ -138,10 +197,12 @@ public class FormCompra extends JFrame {
         tabelaDetalhesItens = new JTable(modeloDetalhesItens);
         JScrollPane scrollDetalhes = new JScrollPane(tabelaDetalhesItens);
         scrollDetalhes.setBorder(BorderFactory.createTitledBorder("Itens Pertencentes à Nota Selecionada"));
-        painelHistorico.add(scrollDetalhes);
+        painelTabelasHistorico.add(scrollDetalhes);
+
+        painelAbaHistoricoCompleta.add(painelTabelasHistorico, BorderLayout.CENTER);
 
         abas.addTab("📦 Registrar Entrada / Compra", painelNovaCompra);
-        abas.addTab("📋 Histórico de Compras", painelHistorico);
+        abas.addTab("📋 Histórico de Compras", painelAbaHistoricoCompleta);
         add(abas, BorderLayout.CENTER);
 
         // =========================================================================
@@ -153,6 +214,8 @@ public class FormCompra extends JFrame {
                 carregarHistoricoComprasDoBanco();
             }
         });
+
+        btnPesquisarFiltro.addActionListener(e -> carregarHistoricoComprasDoBanco());
 
         tabelaHistoricoCompras.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -206,10 +269,7 @@ public class FormCompra extends JFrame {
 
         btnFinalizar.addActionListener(e -> {
             try {
-                // Recupera o fornecedor selecionado na interface gráfica
                 Fornecedor fornSelecionado = (Fornecedor) cbFornecedor.getSelectedItem();
-                
-                // Repassa o fornecedor para o controlador tratar a transação
                 compraController.finalizarCompra(fornSelecionado, listaItensCarrinho);
                 
                 JOptionPane.showMessageDialog(this, "Estoque alimentado e compra registrada com sucesso!");
@@ -230,10 +290,15 @@ public class FormCompra extends JFrame {
         txtQuantidade.setText("1");
         txtPrecoCusto.setText("");
         try {
-            // Atualiza e carrega a lista de fornecedores do banco
             cbFornecedor.removeAllItems();
-            for (Fornecedor f : compraController.listarFornecedores()) {
+            cbFiltroFornecedor.removeAllItems();
+            
+            cbFiltroFornecedor.addItem("-- TODOS OS FORNECEDORES --");
+
+            List<Fornecedor> fornecedores = compraController.listarFornecedores();
+            for (Fornecedor f : fornecedores) {
                 cbFornecedor.addItem(f);
+                cbFiltroFornecedor.addItem(f);
             }
             if (cbFornecedor.getItemCount() > 0) cbFornecedor.setSelectedIndex(0);
 
@@ -246,24 +311,61 @@ public class FormCompra extends JFrame {
     }
 
     private void carregarHistoricoComprasDoBanco() {
-        try {
-            modeloHistoricoCompras.setRowCount(0);
-            modeloDetalhesItens.setRowCount(0);
-            List<Compra> compras = compraController.listarHistoricoCompras();
-            for (Compra c : compras) {
-                // Se sua classe Compra tiver relacionamento mapeado com Fornecedor, usamos c.getFornecedor().getNome()
-                String nomeFornecedor = (c.getFornecedor() != null) ? c.getFornecedor().getNomeFantasia() : "Não Informado";
-                
-                modeloHistoricoCompras.addRow(new Object[]{
-                    c.getId(),
-                    nomeFornecedor,
-                    LocalDate.now() 
-                });
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar histórico: " + ex.getMessage());
+    try {
+        modeloHistoricoCompras.setRowCount(0);
+        modeloDetalhesItens.setRowCount(0);
+
+        LocalDate dataInicio = null;
+        LocalDate dataFim = null;
+        Integer idFornecedor = null;
+
+        DateTimeFormatter formatadorInput = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatadorExibicao = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        String textoInicioLimpo = txtFiltroDataInicio.getText().replace("/", "").replace("_", "").trim();
+        String textoFimLimpo = txtFiltroDataFim.getText().replace("/", "").replace("_", "").trim();
+
+        if (textoInicioLimpo.length() == 8) {
+            dataInicio = LocalDate.parse(txtFiltroDataInicio.getText().trim(), formatadorInput);
         }
+        if (textoFimLimpo.length() == 8) {
+            dataFim = LocalDate.parse(txtFiltroDataFim.getText().trim(), formatadorInput);
+        }
+
+        Object fornecedorSelecionado = cbFiltroFornecedor.getSelectedItem();
+        if (fornecedorSelecionado instanceof Fornecedor) {
+            idFornecedor = ((Fornecedor) fornecedorSelecionado).getId();
+        }
+
+        // Busca os dados filtrados do banco via Controller
+        List<Compra> compras = compraController.consultarComprasComFiltros(dataInicio, dataFim, idFornecedor);
+        
+        for (Compra c : compras) {
+            String nomeFornecedor = (c.getFornecedor() != null) ? c.getFornecedor().getNomeFantasia() : "Não Informado";
+            
+            // CORREÇÃO AQUI: Captura a data real guardada no objeto vindo do banco
+            String dataFormatada = "Não informada";
+            if (c.getDataCompra() != null) {
+                // Pega a data (que está no formato do banco) e transforma em DD/MM/AAAA para a tabela
+                dataFormatada = c.getDataCompra().format(formatadorExibicao);
+            }
+            
+            modeloHistoricoCompras.addRow(new Object[]{
+                c.getId(),
+                nomeFornecedor,
+                dataFormatada // Adiciona a string formatada corretamente na coluna
+            });
+        }
+
+        if (compras.isEmpty() && (!textoInicioLimpo.isEmpty() || idFornecedor != null)) {
+            JOptionPane.showMessageDialog(this, "Nenhuma nota de compra encontrada para os filtros aplicados.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+        }
+    } catch (java.time.format.DateTimeParseException dtpe) {
+        JOptionPane.showMessageDialog(this, "Data inválida! Por favor, use o formato DD/MM/AAAA.", "Aviso", JOptionPane.WARNING_MESSAGE);
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao carregar histórico: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
     }
+}
 
     private void carregarItensDaCompraSelecionada(int idCompra) {
         try {

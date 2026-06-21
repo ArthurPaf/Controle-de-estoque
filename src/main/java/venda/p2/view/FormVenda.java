@@ -2,8 +2,10 @@ package venda.p2.view;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.time.LocalDate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import venda.p2.controller.VendaController;
@@ -22,7 +24,11 @@ public class FormVenda extends JFrame {
     private JTable tabelaItens;
     private DefaultTableModel modeloTabela;
 
-    // Componentes da Aba 2 (Histórico de Vendas)
+    // Componentes da Aba 2 (Histórico de Vendas com Filtros - RF012)
+    private JFormattedTextField txtFiltroDataInicio;
+    private JFormattedTextField txtFiltroDataFim;
+    private JComboBox<Object> cbFiltroCliente; // Usamos Object para aceitar a opção "Todos"
+    private JButton btnPesquisarFiltro;
     private JTable tabelaHistoricoVendas;
     private DefaultTableModel modeloHistoricoVendas;
     private JTable tabelaDetalhesItens;
@@ -32,25 +38,24 @@ public class FormVenda extends JFrame {
     private VendaController vendaController;
     private List<VendaProduto> listaItensCarrinho;
     private double totalVenda = 0.0;
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public FormVenda() {
         vendaController = new VendaController();
         listaItensCarrinho = new ArrayList<>();
 
         setTitle("Módulo de Vendas (PDV & Histórico)");
-        setSize(900, 650);
+        setSize(950, 700);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         
-        // O segredo está aqui: o container principal agora é um JTabbedPane (Abas)
         JTabbedPane abas = new JTabbedPane();
 
         // =========================================================================
-        // CONSTRUÇÃO DA ABA 1: REGISTRAR VENDA (Seu código original encapsulado)
+        // CONSTRUÇÃO DA ABA 1: REGISTRAR VENDA
         // =========================================================================
         JPanel painelNovaVenda = new JPanel(new BorderLayout());
 
-        // --- 1. Cabeçalho ---
         JPanel painelCabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         painelCabecalho.setBorder(BorderFactory.createTitledBorder("Informações Básicas"));
         cbCliente = new JComboBox<>();
@@ -58,7 +63,6 @@ public class FormVenda extends JFrame {
         painelCabecalho.add(cbCliente);
         painelCabecalho.add(new JLabel("Data: " + LocalDate.now()));
 
-        // --- 2. Painel Itens ---
         JPanel painelProdutos = new JPanel(new GridBagLayout());
         painelProdutos.setBorder(BorderFactory.createTitledBorder("Adicionar Itens à Venda"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -84,7 +88,6 @@ public class FormVenda extends JFrame {
         painelSuperior.add(painelProdutos, BorderLayout.CENTER);
         painelNovaVenda.add(painelSuperior, BorderLayout.NORTH);
 
-        // --- 3. Tabela do Carrinho ---
         modeloTabela = new DefaultTableModel(new Object[]{"Item", "Produto", "Preço Un.", "Qtd", "Subtotal"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -94,7 +97,6 @@ public class FormVenda extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Itens da Venda Atual"));
         painelNovaVenda.add(scrollTabela, BorderLayout.CENTER);
 
-        // --- 4. Painel Inferior ---
         JPanel painelInferior = new JPanel(new BorderLayout());
         painelInferior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -120,23 +122,77 @@ public class FormVenda extends JFrame {
         painelInferior.add(painelBotoesFinais, BorderLayout.SOUTH);
         painelNovaVenda.add(painelInferior, BorderLayout.SOUTH);
 
-
         // =========================================================================
-        // CONSTRUÇÃO DA ABA 2: HISTÓRICO DE VENDAS (Mestre-Detalhe)
+        // CONSTRUÇÃO DA ABA 2: HISTÓRICO DE VENDAS COM PAINEL DE FILTROS (RF012)
         // =========================================================================
-        JPanel painelHistorico = new JPanel(new GridLayout(2, 1, 0, 10)); // Divide a tela ao meio (vendas em cima, itens embaixo)
+        JPanel painelAbaHistoricoCompleta = new JPanel(new BorderLayout());
 
-        // Tabela de cima (Vendas Pai)
-        modeloHistoricoVendas = new DefaultTableModel(new Object[]{"ID Venda", "Cliente"}, 0) {
+        // --- Painel Superior de Pesquisa Avançada ---
+        JPanel painelFiltrosPesquisa = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 10));
+        painelFiltrosPesquisa.setBorder(BorderFactory.createTitledBorder("Filtros de Pesquisa (Período & Cliente)"));
+        
+        try {
+            MaskFormatter mascaraData = new MaskFormatter("##/##/####");
+            mascaraData.setPlaceholderCharacter('_');
+            txtFiltroDataInicio = new JFormattedTextField(mascaraData);
+            txtFiltroDataFim = new JFormattedTextField(mascaraData);
+            
+            // Reverte para o estado anterior caso a digitação seja parcial/inválida
+            txtFiltroDataInicio.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+            txtFiltroDataFim.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
+            
+            // Listeners para tratar a deleção completa mantendo os placeholders estruturais
+            txtFiltroDataInicio.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    String limpo = txtFiltroDataInicio.getText().replace("/", "").replace("_", "").trim();
+                    if (limpo.isEmpty()) {
+                        txtFiltroDataInicio.setValue(null);
+                    }
+                }
+            });
+
+            txtFiltroDataFim.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    String limpo = txtFiltroDataFim.getText().replace("/", "").replace("_", "").trim();
+                    if (limpo.isEmpty()) {
+                        txtFiltroDataFim.setValue(null);
+                    }
+                }
+            });
+            
+        } catch (Exception ex) {
+            txtFiltroDataInicio = new JFormattedTextField();
+            txtFiltroDataFim = new JFormattedTextField();
+        }
+        txtFiltroDataInicio.setColumns(8);
+        txtFiltroDataFim.setColumns(8);
+        cbFiltroCliente = new JComboBox<>();
+        btnPesquisarFiltro = new JButton("Pesquisar / Filtrar 🔍");
+
+        painelFiltrosPesquisa.add(new JLabel("Data Início:"));
+        painelFiltrosPesquisa.add(txtFiltroDataInicio);
+        painelFiltrosPesquisa.add(new JLabel("Data Fim:"));
+        painelFiltrosPesquisa.add(txtFiltroDataFim);
+        painelFiltrosPesquisa.add(new JLabel("Cliente:"));
+        painelFiltrosPesquisa.add(cbFiltroCliente);
+        painelFiltrosPesquisa.add(btnPesquisarFiltro);
+
+        painelAbaHistoricoCompleta.add(painelFiltrosPesquisa, BorderLayout.NORTH);
+
+        // Painel Central com as tabelas de Mestre-Detalhe
+        JPanel painelTabelasHistorico = new JPanel(new GridLayout(2, 1, 0, 10));
+
+        modeloHistoricoVendas = new DefaultTableModel(new Object[]{"ID Venda", "Cliente", "Data"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tabelaHistoricoVendas = new JTable(modeloHistoricoVendas);
         JScrollPane scrollHistorico = new JScrollPane(tabelaHistoricoVendas);
         scrollHistorico.setBorder(BorderFactory.createTitledBorder("Vendas Realizadas (Selecione uma para ver os itens)"));
-        painelHistorico.add(scrollHistorico);
+        painelTabelasHistorico.add(scrollHistorico);
 
-        // Tabela de baixo (Itens da Venda selecionada)
         modeloDetalhesItens = new DefaultTableModel(new Object[]{"Produto", "Preço Unitário", "Qtd Vendida"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -144,26 +200,27 @@ public class FormVenda extends JFrame {
         tabelaDetalhesItens = new JTable(modeloDetalhesItens);
         JScrollPane scrollDetalhes = new JScrollPane(tabelaDetalhesItens);
         scrollDetalhes.setBorder(BorderFactory.createTitledBorder("Produtos Pertencentes à Venda Selecionada"));
-        painelHistorico.add(scrollDetalhes);
+        painelTabelasHistorico.add(scrollDetalhes);
 
+        painelAbaHistoricoCompleta.add(painelTabelasHistorico, BorderLayout.CENTER);
 
-        // Adiciona os painéis estruturados como abas independentes
+        // Adiciona as abas estruturadas
         abas.addTab("🛒 Registrar Venda", painelNovaVenda);
-        abas.addTab("📋 Histórico de Vendas", painelHistorico);
+        abas.addTab("📋 Histórico de Vendas", painelAbaHistoricoCompleta);
         add(abas, BorderLayout.CENTER);
 
         // =========================================================================
         // EVENTOS E LISTENERS
         // =========================================================================
         
-        // Monitora quando o usuário clica na aba de histórico para atualizar as vendas automaticamente
         abas.addChangeListener(e -> {
-            if (abas.getSelectedIndex() == 1) { // Aba do histórico selecionada
+            if (abas.getSelectedIndex() == 1) {
                 carregarHistoricoVendasDoBanco();
             }
         });
 
-        // Evento de clique na tabela de histórico para carregar os itens embaixo
+        btnPesquisarFiltro.addActionListener(e -> carregarHistoricoVendasDoBanco());
+
         tabelaHistoricoVendas.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int linhaSelecionada = tabelaHistoricoVendas.getSelectedRow();
@@ -240,11 +297,21 @@ public class FormVenda extends JFrame {
         txtQuantidade.setText("1");
         try {
             cbCliente.removeAllItems();
-            for (Cliente c : vendaController.listarClientes()) cbCliente.addItem(c);
+            cbFiltroCliente.removeAllItems();
+            
+            cbFiltroCliente.addItem("-- TODOS OS CLIENTES --");
+
+            List<Cliente> clientes = vendaController.listarClientes();
+            for (Cliente c : clientes) {
+                cbCliente.addItem(c);
+                cbFiltroCliente.addItem(c); 
+            }
+            
             cbProduto.removeAllItems();
             for (Produto p : vendaController.listarProdutos()) cbProduto.addItem(p);
             if (cbCliente.getItemCount() > 0) cbCliente.setSelectedIndex(0);
             if (cbProduto.getItemCount() > 0) cbProduto.setSelectedIndex(0);
+            
             Produto p = (Produto) cbProduto.getSelectedItem();
             txtPrecoUn.setText(p != null ? String.valueOf(p.getPreco()) : "");
         } catch (Exception ex) {
@@ -252,21 +319,57 @@ public class FormVenda extends JFrame {
         }
     }
 
-    // --- MÉTODOS AUXILIARES DA ABA DE HISTÓRICO ---
-    
     private void carregarHistoricoVendasDoBanco() {
         try {
             modeloHistoricoVendas.setRowCount(0);
-            modeloDetalhesItens.setRowCount(0); // Limpa os detalhes da consulta anterior
-            List<Venda> vendas = vendaController.listarHistoricoVendas();
+            modeloDetalhesItens.setRowCount(0);
+
+            java.time.LocalDate dataInicio = null;
+            java.time.LocalDate dateFim = null;
+            Integer idCliente = null;
+
+            java.time.format.DateTimeFormatter formatador = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            java.time.format.DateTimeFormatter formatadorExibicao = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String textoInicioLimpo = txtFiltroDataInicio.getText().replace("/", "").replace("_", "").trim();
+            String textoFimLimpo = txtFiltroDataFim.getText().replace("/", "").replace("_", "").trim();
+
+            if (textoInicioLimpo.length() == 8) {
+                dataInicio = java.time.LocalDate.parse(txtFiltroDataInicio.getText().trim(), formatador);
+            }
+
+            if (textoFimLimpo.length() == 8) {
+                dateFim = java.time.LocalDate.parse(txtFiltroDataFim.getText().trim(), formatador);
+            }
+
+            Object clienteSelecionado = cbFiltroCliente.getSelectedItem();
+            if (clienteSelecionado instanceof Cliente) {
+                idCliente = ((Cliente) clienteSelecionado).getId();
+            }
+
+            List<Venda> vendas = vendaController.consultarVendasComFiltros(dataInicio, dateFim, idCliente);
+            
             for (Venda v : vendas) {
+                String dataFormatada = "";
+                if (v.getDataVenda() != null) {
+                    dataFormatada = v.getDataVenda().format(formatadorExibicao);
+                }
+
                 modeloHistoricoVendas.addRow(new Object[]{
                     v.getId(),
-                    v.getCliente().getNome()
+                    v.getCliente().getNome(),
+                    dataFormatada
                 });
             }
+            
+            if (vendas.isEmpty() && (!textoInicioLimpo.isEmpty() || idCliente != null)) {
+                JOptionPane.showMessageDialog(this, "Nenhuma venda encontrada para os filtros aplicados.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+        } catch (java.time.format.DateTimeParseException dtpe) {
+            JOptionPane.showMessageDialog(this, "Data digitada inválida! Por favor, use o formato DD/MM/AAAA.", "Aviso", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar histórico: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erro ao aplicar filtros: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 

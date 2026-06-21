@@ -10,6 +10,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ public class Venda {
     @JoinColumn(name = "cliente_id") 
     private Cliente cliente;
 
+    @Column(name = "data_venda")
     private LocalDate dataVenda;
     private Double valorTotal;
 

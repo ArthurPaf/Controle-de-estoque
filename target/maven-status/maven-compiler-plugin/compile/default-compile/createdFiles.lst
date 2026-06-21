@@ -2,6 +2,7 @@ venda\p2\view\FormCompra.class
 venda\p2\dao\TipoContaDAO.class
 venda\p2\model\Financeiro.class
 venda\p2\controller\FormaPagamentoController.class
+venda\p2\view\FormCompra$4.class
 venda\p2\controller\CompraController.class
 venda\p2\controller\FornecedorController.class
 venda\p2\controller\VendaProdutoController.class
@@ -11,6 +12,8 @@ venda\p2\view\MenuPrincipal$8.class
 venda\p2\model\Fornecedor.class
 venda\p2\view\FormTipoConta.class
 venda\p2\view\FormVenda$1.class
+venda\p2\view\FormLogin$1.class
+venda\p2\dao\UsuarioDAO.class
 venda\p2\view\MenuPrincipal$5.class
 venda\p2\view\FormFormaPagamento$1.class
 venda\p2\controller\TipoContaController.class
@@ -23,6 +26,7 @@ venda\p2\view\FormFornecedor$2.class
 venda\p2\model\Cliente.class
 venda\p2\model\Produto.class
 venda\p2\model\Venda.class
+venda\p2\view\FormCompra$5.class
 venda\p2\controller\FinanceiroController.class
 venda\p2\view\MenuPrincipal$7.class
 venda\p2\dao\CategoriaDAO.class
@@ -30,11 +34,14 @@ venda\p2\dao\ProdutoDAO.class
 venda\p2\view\FormParcelas$1.class
 venda\p2\view\FormCompra$1.class
 venda\p2\view\MenuPrincipal$1.class
+venda\p2\view\FormVenda$5.class
 venda\p2\view\FormTipoConta$2.class
+venda\p2\controller\UsuarioController.class
 venda\p2\dao\Conexao.class
 venda\p2\controller\VendaController.class
 venda\p2\controller\FornecedorProdutoController.class
 venda\p2\view\FormVenda$2.class
+venda\p2\view\FormLogin.class
 venda\p2\controller\ClienteController.class
 venda\p2\view\MenuPrincipal$11.class
 venda\p2\view\FormCategoria$2.class
@@ -68,6 +75,7 @@ venda\p2\dao\ClienteDAO.class
 venda\p2\view\FormFornecedor.class
 venda\p2\view\MenuPrincipal$10.class
 venda\p2\view\FormCompra$3.class
+venda\p2\view\FormVenda$4.class
 venda\p2\util\JPAUtil.class
 venda\p2\view\MenuPrincipal$2.class
 venda\p2\dao\FinanceiroParcelaDAO.class
@@ -81,4 +89,5 @@ venda\p2\view\FormCliente.class
 venda\p2\view\FormFormaPagamento.class
 venda\p2\dao\CompraDAO.class
 venda\p2\view\MenuPrincipal.class
+venda\p2\model\Usuario.class
 venda\p2\view\MenuPrincipal$9.class
