@@ -110,4 +110,14 @@ public class ProdutoController {
             throw new Exception("Preço e Estoque devem ser números válidos.");
         }
     }
+
+    public List<Produto> pesquisarPorNome(String nome) throws Exception {
+        logger.info("Método pesquisarPorNome() executado no ProdutoController. Termo: '{}'", nome);
+        
+        if (nome == null) {
+            nome = "";
+        }
+        
+        return produtoDAO.buscarPorNome(nome.trim());
+    }
 }

@@ -3,6 +3,9 @@ package venda.p2.dao;
 import venda.p2.model.Produto;
 import java.util.List;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+
 public class ProdutoDAO {
 
     private GenericDAO<Produto> genericDAO;
@@ -25,5 +28,20 @@ public class ProdutoDAO {
 
     public List<Produto> listarTodos() throws Exception {
         return genericDAO.listarTodos();
+    }
+
+    public List<Produto> buscarPorNome(String nome) {
+        EntityManager em = GenericDAO.getEntityManager();
+        try {
+            // Usamos TRIM para garantir que espaços soltos não estraguem o LIKE
+            String jpql = "SELECT p FROM Produto p WHERE LOWER(TRIM(p.nome)) LIKE LOWER(:nome)";
+            TypedQuery<Produto> query = em.createQuery(jpql, Produto.class);
+            
+            // Força o termo a ir limpo e cercado pelos %
+            query.setParameter("nome", "%" + nome.trim() + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
     }
 }

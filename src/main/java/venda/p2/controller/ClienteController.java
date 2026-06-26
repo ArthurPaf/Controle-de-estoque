@@ -25,6 +25,16 @@ public class ClienteController {
         return clienteDAO.listarTodos();
     }
 
+    public List<Cliente> pesquisarPorNome(String nome) throws Exception {
+        logger.info("Método pesquisarPorNome() executado no ClienteController. Termo: '{}'", nome);
+        
+        if (nome == null) {
+            nome = "";
+        }
+        
+        return clienteDAO.buscarPorNome(nome.trim());
+    }
+
     public Cliente buscarPorId(int id) throws Exception {
         // LOG ADICIONADO
         logger.info("Método buscarPorId() executado para o ID: {}", id);

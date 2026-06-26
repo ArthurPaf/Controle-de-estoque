@@ -83,4 +83,15 @@ public class FornecedorController {
             throw e;
         }
     }
+
+    // Adicione este método dentro da classe FornecedorController
+    public List<Fornecedor> pesquisarPorNome(String nome) throws Exception {
+        logger.info("Método pesquisarPorNome() executado no FornecedorController. Termo: '{}'", nome);
+        
+        if (nome == null) {
+            nome = "";
+        }
+        
+        return fornecedorDAO.buscarPorNome(nome.trim());
+    }
 }

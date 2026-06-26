@@ -151,4 +151,13 @@ public class FinanceiroController {
             throw e;
         }
     }
+
+    public List<Financeiro> filtrarLancamentos(int fluxo, TipoConta tipoConta) throws Exception {
+    // 1 -> Se fluxo for 0 (TODOS), passamos null ou vazio para a busca dinâmica do DAO
+    // 2 -> Se fluxo for 1 (A Pagar), passamos 1
+    // 3 -> Se fluxo for 2 (A Receber), passamos 2
+    
+    // Altere a chamada abaixo de acordo com as variáveis aceitas no seu método multifiltro do DAO
+    return financeiroDAO.buscarComFiltros(fluxo, tipoConta);
+}
 }

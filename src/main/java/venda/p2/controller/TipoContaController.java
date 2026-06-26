@@ -79,4 +79,14 @@ public class TipoContaController {
             throw e;
         }
     }
+
+    public List<TipoConta> pesquisarPorDescricao(String descricao) throws Exception {
+        logger.info("Método pesquisarPorDescricao() executado no TipoContaController. Termo: '{}'", descricao);
+        
+        if (descricao == null) {
+            descricao = "";
+        }
+        
+        return tipoContaDAO.buscarPorDescricao(descricao.trim());
+    }
 }

@@ -4,6 +4,7 @@ package venda.p2.controller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.persistence.EntityManager;
 import venda.p2.dao.VendaDAO;
 import venda.p2.dao.GenericDAO;
 import venda.p2.dao.ProdutoDAO;
@@ -109,6 +110,43 @@ public class VendaController {
             throw new Exception("Adicione pelo menos um produto para fechar a venda.");
         }
 
+        // =========================================================================
+        // REGRA DE NEGÓCIO: TRAVA DE LIMITE DE 3 VENDAS POR CPF NO MESMO MÊS
+        // =========================================================================
+        // 1. Limpa o CPF removendo pontos e traços para garantir uma comparação perfeita
+        String cpfNovoCli = cliente.getCpf().replaceAll("[^0-9]", "");
+        
+        // 2. Obtém os dados do período atual (mês e ano) utilizando LocalDate
+        java.time.LocalDate dataAtual = java.time.LocalDate.now();
+        int mesAtual = dataAtual.getMonthValue();
+        int anoAtual = dataAtual.getYear();
+
+        // 3. Varre o histórico de vendas para realizar a contagem em memória
+        List<Venda> historicoVendas = this.listarHistoricoVendas();
+        long contagemVendasNoMes = 0;
+
+        for (Venda v : historicoVendas) {
+            if (v.getCliente() != null && v.getCliente().getCpf() != null) {
+                String cpfHistorico = v.getCliente().getCpf().replaceAll("[^0-9]", "");
+                java.time.LocalDate dataVendaHistorico = v.getDataVenda();
+
+                // Se o CPF bater e a venda ocorreu no mesmo mês e ano correntes
+                if (cpfNovoCli.equals(cpfHistorico) && dataVendaHistorico != null 
+                        && dataVendaHistorico.getMonthValue() == mesAtual 
+                        && dataVendaHistorico.getYear() == anoAtual) {
+                    
+                    contagemVendasNoMes++;
+                }
+            }
+        }
+
+        // 4. Bloqueia imediatamente antes de qualquer persistência caso atinja o limite
+        if (contagemVendasNoMes >= 3) {
+            logger.warn("Venda recusada. CPF: {} já atingiu o limite de {} compras neste mês.", cliente.getCpf(), contagemVendasNoMes);
+            throw new Exception("Limite atingido! Este CPF já realizou " + contagemVendasNoMes + " compras no mês atual.");
+        }
+        // =========================================================================
+
         try {
             // 1. Instancia a venda transiente
             Venda venda = new Venda();
@@ -122,7 +160,6 @@ public class VendaController {
             
             // --- CORREÇÃO 1: INJETANDO A DATA ATUAL ---
             venda.setDataVenda(java.time.LocalDate.now()); 
-            // Nota: Se na sua classe Venda o método for setData(LocalDate), mude para venda.setData(...);
 
             // --- CORREÇÃO 2: CALCULANDO O VALOR TOTAL DA VENDA ---
             double total = 0;
@@ -130,7 +167,6 @@ public class VendaController {
                 total += item.getValorUnitario() * item.getQuantidade();
             }
             venda.setValorTotal(total);
-            // Nota: Se na sua classe Venda o método for setValor_total(total), mude para refletir a model.
 
             // 2. Salva e CAPTURA o objeto gerenciado pelo JPA
             Venda vendaSalva = vendaDAO.salvarVenda(venda); 
@@ -152,7 +188,7 @@ public class VendaController {
                 // Salva o item da venda na tabela venda_produto
                 vendaDAO.salvarItem(item);
 
-                // Atualização de estoque usando o objeto monitorado
+                //  Atualização de estoque usando o objeto monitorado
                 double estoqueAtualizado = prod.getQuantidade() - item.getQuantidade();
                 prod.setQuantidade(estoqueAtualizado);
                 
@@ -171,5 +207,7 @@ public class VendaController {
             logger.error("Erro ao finalizar a venda: {}", ex.getMessage());
             throw ex;
         }
+        
     }
+
 }

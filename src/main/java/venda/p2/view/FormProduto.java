@@ -7,18 +7,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import venda.p2.controller.ProdutoController;
-import venda.p2.model.Categoria;
 import venda.p2.model.Produto;
+import venda.p2.model.Categoria;
 
 public class FormProduto extends JFrame {
 
-    private JTextField txtNome, txtPreco, txtEstoque;
+    private JTextField txtNome, txtPreco, txtQuantidade, txtPesquisa; // txtPesquisa adicionado
     private JComboBox<Categoria> cbCategoria;
-    private JButton btnSalvar, btnExcluir, btnEditar, btnLimpar;
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // btnPesquisar adicionado
     private JTable tabelaProdutos;
     private DefaultTableModel modeloTabela;
-    
-    // View comunicando-se estritamente com a camada de controle
+
     private ProdutoController produtoController;
     private Produto produtoSelecionado;
 
@@ -26,12 +25,16 @@ public class FormProduto extends JFrame {
         produtoController = new ProdutoController();
 
         setTitle("Gerenciar Produtos (CRUD)");
-        setSize(700, 550);
+        setSize(650, 550); // Ajustado para acomodar os novos componentes
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- 1. FORMULÁRIO DE CADASTRO (Parte Superior) ---
+        // --- PAINEL PRINCIPAL (Agrupa Formulário e Busca no Topo) ---
+        JPanel painelTopo = new JPanel();
+        painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
+
+        // --- 1. FORMULÁRIO DE CADASTRO ---
         JPanel painelCampos = new JPanel(new GridBagLayout());
         painelCampos.setBorder(BorderFactory.createTitledBorder("Dados do Produto"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -40,10 +43,12 @@ public class FormProduto extends JFrame {
 
         txtNome = new JTextField(20);
         txtPreco = new JTextField(10);
-        txtEstoque = new JTextField(10);
+        txtQuantidade = new JTextField(10);
         cbCategoria = new JComboBox<>();
 
-        // Adicionando componentes na Grid
+        // Carrega as categorias no ComboBox
+        carregarCategorias();
+
         gbc.gridx = 0; gbc.gridy = 0; painelCampos.add(new JLabel("Nome:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; painelCampos.add(txtNome, gbc);
 
@@ -51,17 +56,17 @@ public class FormProduto extends JFrame {
         gbc.gridx = 1; gbc.gridy = 1; painelCampos.add(txtPreco, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; painelCampos.add(new JLabel("Estoque Inicial:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 2; painelCampos.add(txtEstoque, gbc);
+        gbc.gridx = 1; gbc.gridy = 2; painelCampos.add(txtQuantidade, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; painelCampos.add(new JLabel("Categoria:"), gbc);
         gbc.gridx = 1; gbc.gridy = 3; painelCampos.add(cbCategoria, gbc);
 
         // --- 2. PAINEL DE BOTÕES DE AÇÃO ---
-        JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         btnSalvar = new JButton("Salvar Novo");
         btnEditar = new JButton("Atualizar");
         btnExcluir = new JButton("Excluir");
-        btnLimpar = new JButton("Limpar/Cancelar");
+        btnLimpar = new JButton("Limpar");
 
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
@@ -74,118 +79,130 @@ public class FormProduto extends JFrame {
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         painelCampos.add(painelAcoes, gbc);
 
-        add(painelCampos, BorderLayout.NORTH);
+        painelTopo.add(painelCampos);
 
-        // --- 3. TABELA DE PRODUTOS (Parte Inferior) ---
+        // --- NOVO: PAINEL DE PESQUISA ---
+        JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Produtos"));
+        txtPesquisa = new JTextField(25);
+        btnPesquisar = new JButton("Pesquisar");
+
+        painelBusca.add(new JLabel("Nome do Produto:"));
+        painelBusca.add(txtPesquisa);
+        painelBusca.add(btnPesquisar);
+
+        painelTopo.add(painelBusca);
+
+        add(painelTopo, BorderLayout.NORTH);
+
+        // --- 3. TABELA DE PRODUTOS ---
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome", "Preço", "Estoque", "Categoria"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Bloqueia a edição direta na célula
+                return false;
             }
         };
-        
+
         tabelaProdutos = new JTable(modeloTabela);
         JScrollPane scrollTabela = new JScrollPane(tabelaProdutos);
-        scrollTabela.setBorder(BorderFactory.createTitledBorder("Produtos Cadastrados"));
+        scrollTabela.setBorder(BorderFactory.createTitledBorder("Produtos em Estoque"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // --- 4. EVENTOS E LISTENERS ---
+        // --- 4. EVENTOS ---
 
-        // Evento de clique na tabela para carregar dados nos campos
+        // Clique na tabela para preencher os campos
         tabelaProdutos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int linhaSelecionada = tabelaProdutos.getSelectedRow();
-                if (linhaSelecionada >= 0) {
-                    int id = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
+                int linha = tabelaProdutos.getSelectedRow();
+                if (linha >= 0) {
+                    int id = (int) modeloTabela.getValueAt(linha, 0);
                     try {
                         produtoSelecionado = produtoController.buscarPorId(id);
                         if (produtoSelecionado != null) {
                             txtNome.setText(produtoSelecionado.getNome());
                             txtPreco.setText(String.valueOf(produtoSelecionado.getPreco()));
-                            txtEstoque.setText(String.valueOf(produtoSelecionado.getQuantidade()));
-                            
-                            if (produtoSelecionado.getCategoria() != null) {
-                                for (int i = 0; i < cbCategoria.getItemCount(); i++) {
-                                    Categoria cat = cbCategoria.getItemAt(i);
-                                    if (cat.getId() == produtoSelecionado.getCategoria().getId()) {
-                                        cbCategoria.setSelectedIndex(i);
-                                        break;
-                                    }
-                                }
-                            }
+                            txtQuantidade.setText(String.valueOf(produtoSelecionado.getQuantidade()));
+                            cbCategoria.setSelectedItem(produtoSelecionado.getCategoria());
 
                             btnSalvar.setEnabled(false);
                             btnEditar.setEnabled(true);
                             btnExcluir.setEnabled(true);
                         }
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(FormProduto.this, "Erro ao carregar dados do produto: " + ex.getMessage());
+                        JOptionPane.showMessageDialog(FormProduto.this, "Erro ao carregar produto: " + ex.getMessage());
                     }
                 }
             }
         });
 
-        // Botão Salvar Novo
+        // Botão Salvar
         btnSalvar.addActionListener(e -> {
             try {
                 produtoController.salvarProduto(
                     txtNome.getText(),
                     txtPreco.getText(),
-                    txtEstoque.getText(),
+                    txtQuantidade.getText(),
                     (Categoria) cbCategoria.getSelectedItem()
                 );
                 JOptionPane.showMessageDialog(this, "Produto cadastrado com sucesso!");
                 btnLimpar.doClick();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro ao salvar", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
             }
         });
 
-        // Botão Editar/Atualizar
+        // Botão Editar
         btnEditar.addActionListener(e -> {
-            if (produtoSelecionado != null) {
-                try {
-                    produtoController.atualizarProduto(
-                        produtoSelecionado,
-                        txtNome.getText(),
-                        txtPreco.getText(),
-                        txtEstoque.getText(),
-                        (Categoria) cbCategoria.getSelectedItem()
-                    );
-                    JOptionPane.showMessageDialog(this, "Produto updated com sucesso!");
-                    btnLimpar.doClick();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
-                }
+            try {
+                produtoController.atualizarProduto(
+                    produtoSelecionado,
+                    txtNome.getText(),
+                    txtPreco.getText(),
+                    txtQuantidade.getText(),
+                    (Categoria) cbCategoria.getSelectedItem()
+                );
+                JOptionPane.showMessageDialog(this, "Produto atualizado com sucesso!");
+                btnLimpar.doClick();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
             }
         });
 
         // Botão Excluir
         btnExcluir.addActionListener(e -> {
             if (produtoSelecionado != null) {
-                int confirmacao = JOptionPane.showConfirmDialog(this, 
-                    "Tem certeza que deseja excluir o produto " + produtoSelecionado.getNome() + "?", 
-                    "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-                    
-                if (confirmacao == JOptionPane.YES_OPTION) {
+                int conf = JOptionPane.showConfirmDialog(this, "Deseja excluir o produto '" + produtoSelecionado.getNome() + "'?", "Confirmar", JOptionPane.YES_NO_OPTION);
+                if (conf == JOptionPane.YES_OPTION) {
                     try {
                         produtoController.excluirProduto(produtoSelecionado.getId());
-                        JOptionPane.showMessageDialog(this, "Produto excluído com sucesso!");
+                        JOptionPane.showMessageDialog(this, "Produto removido com sucesso!");
                         btnLimpar.doClick();
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage() + 
-                            "\n(Pode estar acoplado a uma venda/compra ativa)");
+                        JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage());
                     }
                 }
             }
         });
 
-        // Botão Limpar / Atualização Gráfica Geral
+        // NOVO: Ação do Botão Pesquisar
+        btnPesquisar.addActionListener(e -> {
+            String busca = txtPesquisa.getText().trim();
+            try {
+                // Utiliza o método mapeado no ProdutoController que criamos no passo anterior
+                List<Produto> resultado = produtoController.pesquisarPorNome(busca);
+                atualizarTabela(resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao pesquisar: " + ex.getMessage());
+            }
+        });
+
+        // Botão Limpar / Resetar estado da tela
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
             txtPreco.setText("");
-            txtEstoque.setText("");
+            txtQuantidade.setText("");
+            txtPesquisa.setText(""); // limpa o campo de busca
             if (cbCategoria.getItemCount() > 0) cbCategoria.setSelectedIndex(0);
             
             produtoSelecionado = null;
@@ -193,36 +210,41 @@ public class FormProduto extends JFrame {
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
 
-            modeloTabela.setRowCount(0);
             try {
-                List<Produto> produtos = produtoController.listarTodos();
-                for (Produto p : produtos) {
-                    String nomeCategoria = (p.getCategoria() != null) ? p.getCategoria().toString() : "Sem Categoria";
-                    modeloTabela.addRow(new Object[]{
-                        p.getId(),
-                        p.getNome(),
-                        p.getPreco(),
-                        p.getQuantidade(),
-                        nomeCategoria
-                    });
-                }
+                List<Produto> completa = produtoController.listarTodos();
+                atualizarTabela(completa);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao listar produtos: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao listar: " + ex.getMessage());
             }
         });
 
-        // Carga Inicial do ComboBox de Categorias Relacionadas
+        // Inicializa a tabela cheia ao abrir
+        btnLimpar.doClick();
+    }
+
+    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS
+    private void atualizarTabela(List<Produto> lista) {
+        modeloTabela.setRowCount(0);
+        for (Produto prod : lista) {
+            modeloTabela.addRow(new Object[]{
+                prod.getId(),
+                prod.getNome(),
+                prod.getPreco(),
+                prod.getQuantidade(),
+                prod.getCategoria() != null ? prod.getCategoria().getNome() : "Sem Categoria"
+            });
+        }
+    }
+
+    private void carregarCategorias() {
         try {
             cbCategoria.removeAllItems();
-            List<Categoria> categorias = produtoController.listarCategorias();
-            for (Categoria cat : categorias) {
-                cbCategoria.addItem(cat); 
+            List<Categoria> list = produtoController.listarCategorias();
+            for (Categoria c : list) {
+                cbCategoria.addItem(c);
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar categorias no combo: " + e.getMessage());
+        } catch (Exception ex) {
+            System.out.println("Erro ao carregar combo de categorias: " + ex.getMessage());
         }
-
-        // Força a primeira varredura/limpeza gráfica ao renderizar o Jframe
-        btnLimpar.doClick();
-    } // <-- Fim do Construtor
+    }
 }

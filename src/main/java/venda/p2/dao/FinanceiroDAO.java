@@ -3,6 +3,8 @@ package venda.p2.dao;
 import jakarta.persistence.EntityManager;
 import venda.p2.model.Financeiro;
 import venda.p2.model.FinanceiroParcela;
+import venda.p2.model.TipoConta;
+
 import java.util.List;
 
 public class FinanceiroDAO {
@@ -63,7 +65,41 @@ public class FinanceiroDAO {
     /**
      * Atualiza/Salva uma única parcela alterada na hora de dar baixa.
      */
-    public void atualizarParcela(FinanceiroParcela parcela) throws Exception {
-        parcelaGeneric.salvar(parcela);
+    // =========================================================================
+    // MÉTODO DE FILTRAGEM DINÂMICA AJUSTADO
+    // =========================================================================
+    public List<Financeiro> buscarComFiltros(int fluxo, TipoConta tipoConta) throws Exception {
+        EntityManager em = GenericDAO.getEntityManager();
+        try {
+            // Começa com a consulta base trazendo tudo
+            StringBuilder jpql = new StringBuilder("SELECT f FROM Financeiro f WHERE 1=1");
+
+            // 1. Filtro por Fluxo: 1 para Pagar, 2 para Receber (0 é "TODOS", então ignora)
+            if (fluxo == 1 || fluxo == 2) {
+                jpql.append(" AND f.pagar_ou_receber = :fluxo");
+            }
+
+            // 2. Filtro por Categoria/TipoConta (se não for nulo)
+            if (tipoConta != null) {
+                jpql.append(" AND f.tipoConta = :tipoConta");
+            }
+
+            // Ordena para que os lançamentos mais recentes apareçam primeiro
+            jpql.append(" ORDER BY f.id DESC");
+
+            var query = em.createQuery(jpql.toString(), Financeiro.class);
+
+            // Vincula os parâmetros se eles entrarem nos filtros acima
+            if (fluxo == 1 || fluxo == 2) {
+                query.setParameter("fluxo", fluxo);
+            }
+            if (tipoConta != null) {
+                query.setParameter("tipoConta", tipoConta);
+            }
+
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
     }
 }

@@ -11,12 +11,11 @@ import venda.p2.model.Fornecedor;
 
 public class FormFornecedor extends JFrame {
 
-    private JTextField txtNomeFantasia, txtRazaoSocial, txtCnpj;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    private JTextField txtNomeFantasia, txtRazaoSocial, txtCnpj, txtPesquisa;
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar;
     private JTable tabelaFornecedores;
     private DefaultTableModel modeloTabela;
 
-    // View conversando estritamente com a camada de controle correspondente
     private FornecedorController fornecedorController;
     private Fornecedor fornecedorSelecionado;
 
@@ -24,21 +23,25 @@ public class FormFornecedor extends JFrame {
         fornecedorController = new FornecedorController();
 
         setTitle("Gerenciar Fornecedores (CRUD)");
-        setSize(700, 500);
+        setSize(650, 550);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- FORMULÁRIO ---
+        // --- PAINEL PRINCIPAL (Top) ---
+        JPanel painelTopo = new JPanel();
+        painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
+
+        // --- 1. FORMULÁRIO DE CADASTRO ---
         JPanel painelCampos = new JPanel(new GridBagLayout());
         painelCampos.setBorder(BorderFactory.createTitledBorder("Dados do Fornecedor"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        txtNomeFantasia = new JTextField(25);
-        txtRazaoSocial = new JTextField(25);
-        txtCnpj = new JTextField(18);
+        txtNomeFantasia = new JTextField(20);
+        txtRazaoSocial = new JTextField(20);
+        txtCnpj = new JTextField(15);
 
         gbc.gridx = 0; gbc.gridy = 0; painelCampos.add(new JLabel("Nome Fantasia:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; painelCampos.add(txtNomeFantasia, gbc);
@@ -49,8 +52,8 @@ public class FormFornecedor extends JFrame {
         gbc.gridx = 0; gbc.gridy = 2; painelCampos.add(new JLabel("CNPJ:"), gbc);
         gbc.gridx = 1; gbc.gridy = 2; painelCampos.add(txtCnpj, gbc);
 
-        // --- BOTÕES ---
-        JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // --- 2. PAINEL DE BOTÕES DE AÇÃO ---
+        JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         btnSalvar = new JButton("Salvar Novo");
         btnEditar = new JButton("Atualizar");
         btnExcluir = new JButton("Excluir");
@@ -65,15 +68,30 @@ public class FormFornecedor extends JFrame {
         painelAcoes.add(btnLimpar);
 
         gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
-        gbc.insets = new Insets(15, 5, 5, 5);
         painelCampos.add(painelAcoes, gbc);
 
-        add(painelCampos, BorderLayout.NORTH);
+        painelTopo.add(painelCampos);
 
-        // --- TABELA ---
+        // --- PAINEL DE PESQUISA ---
+        JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Fornecedores"));
+        txtPesquisa = new JTextField(25);
+        btnPesquisar = new JButton("Pesquisar");
+
+        painelBusca.add(new JLabel("Nome Fantasia:"));
+        painelBusca.add(txtPesquisa);
+        painelBusca.add(btnPesquisar);
+
+        painelTopo.add(painelBusca);
+
+        add(painelTopo, BorderLayout.NORTH);
+
+        // --- 3. TABELA DE FORNECEDORES ---
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome Fantasia", "Razão Social", "CNPJ"}, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
         tabelaFornecedores = new JTable(modeloTabela);
@@ -81,9 +99,9 @@ public class FormFornecedor extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Fornecedores Cadastrados"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // --- EVENTOS E LISTENERS ---
+        // --- 4. EVENTOS ---
 
-        // Clique na JTable para carregar o registro nos campos de texto
+        // Clique na tabela
         tabelaFornecedores.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -102,13 +120,13 @@ public class FormFornecedor extends JFrame {
                             btnExcluir.setEnabled(true);
                         }
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(FormFornecedor.this, "Erro ao carregar: " + ex.getMessage());
+                        JOptionPane.showMessageDialog(FormFornecedor.this, "Erro ao carregar fornecedor: " + ex.getMessage());
                     }
                 }
             }
         });
 
-        // Ação do Botão Salvar
+        // Botão Salvar
         btnSalvar.addActionListener(e -> {
             try {
                 fornecedorController.salvarFornecedor(
@@ -116,77 +134,89 @@ public class FormFornecedor extends JFrame {
                     txtRazaoSocial.getText(),
                     txtCnpj.getText()
                 );
-                JOptionPane.showMessageDialog(this, "Fornecedor salvo!");
+                JOptionPane.showMessageDialog(this, "Fornecedor cadastrado com sucesso!");
                 btnLimpar.doClick();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());
             }
         });
 
-        // Ação do Botão Editar (Atualizar)
+        // Botão Editar
         btnEditar.addActionListener(e -> {
-            if (fornecedorSelecionado != null) {
-                try {
-                    fornecedorController.atualizarFornecedor(
-                        fornecedorSelecionado,
-                        txtNomeFantasia.getText(),
-                        txtRazaoSocial.getText(),
-                        txtCnpj.getText()
-                    );
-                    JOptionPane.showMessageDialog(this, "Fornecedor atualizado!");
-                    btnLimpar.doClick();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
-                }
+            try {
+                fornecedorController.atualizarFornecedor(
+                    fornecedorSelecionado,
+                    txtNomeFantasia.getText(),
+                    txtRazaoSocial.getText(),
+                    txtCnpj.getText()
+                );
+                JOptionPane.showMessageDialog(this, "Fornecedor atualizado com sucesso!");
+                btnLimpar.doClick();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
             }
         });
 
-        // Ação do Botão Excluir
+        // Botão Excluir
         btnExcluir.addActionListener(e -> {
             if (fornecedorSelecionado != null) {
-                int conf = JOptionPane.showConfirmDialog(this, 
-                    "Excluir " + fornecedorSelecionado.getNomeFantasia() + "?", 
-                    "Confirmação", JOptionPane.YES_NO_OPTION);
+                int conf = JOptionPane.showConfirmDialog(this, "Deseja excluir o fornecedor '" + fornecedorSelecionado.getNomeFantasia() + "'?", "Confirmar", JOptionPane.YES_NO_OPTION);
                 if (conf == JOptionPane.YES_OPTION) {
                     try {
                         fornecedorController.excluirFornecedor(fornecedorSelecionado.getId());
-                        JOptionPane.showMessageDialog(this, "Excluído!");
+                        JOptionPane.showMessageDialog(this, "Fornecedor removido com sucesso!");
                         btnLimpar.doClick();
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Erro ao excluir (pode estar ligado a uma Compra).");
+                        JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage());
                     }
                 }
             }
         });
 
-        // Ação do Botão Limpar / Atualização Gráfica da Tabela
+        // Ação do Botão Pesquisar
+        btnPesquisar.addActionListener(e -> {
+            String busca = txtPesquisa.getText().trim();
+            try {
+                List<Fornecedor> resultado = fornecedorController.pesquisarPorNome(busca);
+                atualizarTabela(resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao pesquisar: " + ex.getMessage());
+            }
+        });
+
+        // Botão Limpar / Reset
         btnLimpar.addActionListener(e -> {
             txtNomeFantasia.setText("");
             txtRazaoSocial.setText("");
             txtCnpj.setText("");
-            fornecedorSelecionado = null;
+            txtPesquisa.setText("");
             
+            fornecedorSelecionado = null;
             btnSalvar.setEnabled(true);
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
 
-            modeloTabela.setRowCount(0);
             try {
-                List<Fornecedor> lista = fornecedorController.listarTodos();
-                for (Fornecedor f : lista) {
-                    modeloTabela.addRow(new Object[]{
-                        f.getId(), 
-                        f.getNomeFantasia(), 
-                        f.getRazaoSocial(), 
-                        f.getCnpj()
-                    });
-                }
+                List<Fornecedor> completa = fornecedorController.listarTodos();
+                atualizarTabela(completa);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao listar: " + ex.getMessage());
             }
         });
 
-        // Executa a primeira atualização visual da tabela ao abrir o formulário
         btnLimpar.doClick();
-    } // <-- Fim do construtor e encerramento limpo da classe
+    }
+
+    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS
+    private void atualizarTabela(List<Fornecedor> lista) {
+        modeloTabela.setRowCount(0);
+        for (Fornecedor f : lista) {
+            modeloTabela.addRow(new Object[]{
+                f.getId(),
+                f.getNomeFantasia(),
+                f.getRazaoSocial(),
+                f.getCnpj()
+            });
+        }
+    }
 }

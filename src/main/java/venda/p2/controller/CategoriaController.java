@@ -31,6 +31,17 @@ public class CategoriaController {
         return categoriaDAO.buscarPorId(id);
     }
 
+    public List<Categoria> pesquisarPorNome(String nome) throws Exception {
+        // LOG ADICIONADO
+        logger.info("Método pesquisarPorNome() executado com o termo: '{}'", nome);
+        
+        if (nome == null) {
+            nome = "";
+        }
+        
+        return categoriaDAO.buscarPorNome(nome.trim());
+    }
+
     public void salvarCategoria(Categoria categoria) throws Exception {
         // LOG ADICIONADO
         logger.info("Método salvarCategoria() executado.");

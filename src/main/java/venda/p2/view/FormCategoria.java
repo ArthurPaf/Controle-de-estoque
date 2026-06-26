@@ -12,11 +12,11 @@ import venda.p2.model.Categoria;
 public class FormCategoria extends JFrame {
     
     private JTextField txtNome;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    private JTextField txtPesquisa; // NOVO CAMPO DE TEXTO PARA BUSCA
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // NOVO BOTÃO
     private JTable tabelaCategorias;
     private DefaultTableModel modeloTabela;
     
-    // View conversa estritamente com o Controller correspondente
     private CategoriaController categoriaController;
     private Categoria categoriaSelecionada;
 
@@ -24,12 +24,16 @@ public class FormCategoria extends JFrame {
         categoriaController = new CategoriaController();
         
         setTitle("Gerenciar Categorias (CRUD)");
-        setSize(550, 450);
+        setSize(550, 520); // Aumentado um pouco o tamanho vertical para acomodar a busca
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         
-        // --- 1. FORMULÁRIO DE CADASTRO (Superior) ---
+        // --- PAINEL PRINCIPAL (Agrupa o Formulário e a Pesquisa no Topo) ---
+        JPanel painelTopo = new JPanel();
+        painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
+
+        // --- 1. FORMULÁRIO DE CADASTRO ---
         JPanel painelCampos = new JPanel(new GridBagLayout());
         painelCampos.setBorder(BorderFactory.createTitledBorder("Dados da Categoria"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -41,7 +45,7 @@ public class FormCategoria extends JFrame {
         gbc.gridx = 0; gbc.gridy = 0; painelCampos.add(new JLabel("Nome da Categoria:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; painelCampos.add(txtNome, gbc);
 
-        // --- 2. PAINEL DE BOTÕES ---
+        // --- 2. PAINEL DE BOTÕES DE AÇÃO ---
         JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         btnSalvar = new JButton("Salvar Nova");
         btnEditar = new JButton("Atualizar");
@@ -58,10 +62,24 @@ public class FormCategoria extends JFrame {
 
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
         painelCampos.add(painelAcoes, gbc);
+        
+        painelTopo.add(painelCampos);
 
-        add(painelCampos, BorderLayout.NORTH);
+        // --- NOVO: 2.5 PAINEL DE PESQUISA ---
+        JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Categorias"));
+        txtPesquisa = new JTextField(25);
+        btnPesquisar = new JButton("Pesquisar");
+        
+        painelBusca.add(new JLabel("Nome:"));
+        painelBusca.add(txtPesquisa);
+        painelBusca.add(btnPesquisar);
+        
+        painelTopo.add(painelBusca);
 
-        // --- 3. TABELA DE CATEGORIAS (Centro/Inferior) ---
+        add(painelTopo, BorderLayout.NORTH);
+
+        // --- 3. TABELA DE CATEGORIAS ---
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome da Categoria"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -74,9 +92,9 @@ public class FormCategoria extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Categorias Cadastradas"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // --- 4. EVENTOS E AÇÕES DOS BOTÕES (A classe encerra aqui!) ---
+        // --- 4. EVENTOS E AÇÕES ---
 
-        // Evento de clique na tabela: busca a entidade pelo id e atualiza estado visual dos campos
+        // Evento de clique na tabela
         tabelaCategorias.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -127,7 +145,7 @@ public class FormCategoria extends JFrame {
                     
                     categoriaController.salvarCategoria(categoriaSelecionada);
                     
-                    JOptionPane.showMessageDialog(this, "Categoria atualizada com sucesso!");
+                    JOptionPane.showMessageDialog(this, "Categoria updated com sucesso!");
                     btnLimpar.doClick();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
@@ -155,26 +173,44 @@ public class FormCategoria extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Responsável também por resetar o estado e reatualizar a tabela
+        // NOVO: Ação do Botão Pesquisar
+        btnPesquisar.addActionListener(e -> {
+            String termoBusca = txtPesquisa.getText().trim();
+            try {
+                // Chama o método que colocamos no controller
+                List<Categoria> resultado = categoriaController.pesquisarPorNome(termoBusca);
+                atualizarTabela(resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao pesquisar: " + ex.getMessage());
+            }
+        });
+
+        // Ação do Botão Limpar / Reseta os campos e traz a lista cheia
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
+            txtPesquisa.setText(""); // Limpa o campo de busca também
             categoriaSelecionada = null;
             btnSalvar.setEnabled(true);
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
             
-            modeloTabela.setRowCount(0);
             try {
-                List<Categoria> lista = categoriaController.listarCategorias();
-                for (Categoria cat : lista) {
-                    modeloTabela.addRow(new Object[]{ cat.getId(), cat.getNome() });
-                }
+                List<Categoria> listaCompleta = categoriaController.listarCategorias();
+                atualizarTabela(listaCompleta);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela: " + ex.getMessage());
             }
         });
 
-        // Carrega os dados na JTable na primeira abertura da janela
+        // Carrega os dados cheios na primeira abertura da janela
         btnLimpar.doClick();
+    }
+
+    // MÉTODO AUXILIAR PARA REPREENCHER AS LINHAS DA TABELA
+    private void atualizarTabela(List<Categoria> lista) {
+        modeloTabela.setRowCount(0);
+        for (Categoria cat : lista) {
+            modeloTabela.addRow(new Object[]{ cat.getId(), cat.getNome() });
+        }
     }
 }

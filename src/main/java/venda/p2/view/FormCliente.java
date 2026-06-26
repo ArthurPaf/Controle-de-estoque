@@ -11,8 +11,8 @@ import venda.p2.model.Cliente;
 
 public class FormCliente extends JFrame {
 
-    private JTextField txtNome, txtCpf, txtRg, txtEndereco, txtTelefone;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    private JTextField txtNome, txtCpf, txtRg, txtEndereco, txtTelefone, txtPesquisa; // txtPesquisa adicionado
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // btnPesquisar adicionado
     private JTable tabelaClientes;
     private DefaultTableModel modeloTabela;
 
@@ -24,12 +24,16 @@ public class FormCliente extends JFrame {
         clienteController = new ClienteController();
 
         setTitle("Gerenciar Clientes (CRUD)");
-        setSize(750, 550);
+        setSize(750, 600); // Ajustado levemente na altura para acomodar a barra de busca
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- 1. FORMULÁRIO DE CADASTRO (Parte Superior) ---
+        // --- PAINEL PRINCIPAL (Agrupa Formulário e Busca no Topo) ---
+        JPanel painelTopo = new JPanel();
+        painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
+
+        // --- 1. FORMULÁRIO DE CADASTRO ---
         JPanel painelCampos = new JPanel(new GridBagLayout());
         painelCampos.setBorder(BorderFactory.createTitledBorder("Dados do Cliente"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -77,9 +81,24 @@ public class FormCliente extends JFrame {
         gbc.insets = new Insets(15, 5, 5, 5);
         painelCampos.add(painelAcoes, gbc);
 
-        add(painelCampos, BorderLayout.NORTH);
+        painelTopo.add(painelCampos);
 
-        // --- 3. TABELA DE CLIENTES (Parte Central/Inferior) ---
+        // --- NOVO: PAINEL DE PESQUISA ---
+        JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Clientes"));
+        txtPesquisa = new JTextField(30);
+        btnPesquisar = new JButton("Pesquisar");
+
+        painelBusca.add(new JLabel("Nome do Cliente:"));
+        painelBusca.add(txtPesquisa);
+        painelBusca.add(btnPesquisar);
+
+        painelTopo.add(painelBusca);
+
+        // Adiciona todo o bloco superior no NORTH do BorderLayout
+        add(painelTopo, BorderLayout.NORTH);
+
+        // --- 3. TABELA DE CLIENTES ---
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "RG", "Endereço", "Telefone"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -92,7 +111,7 @@ public class FormCliente extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Clientes Cadastrados"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // --- 4. EVENTOS E AÇÕES DOS BOTÕES (A classe encerra exatamente aqui!) ---
+        // --- 4. EVENTOS E AÇÕES DOS BOTÕES ---
 
         // Evento de clique na tabela para carregar o cliente selecionado do banco
         tabelaClientes.addMouseListener(new MouseAdapter() {
@@ -150,7 +169,7 @@ public class FormCliente extends JFrame {
                     clienteSelecionado.setTelefone(txtTelefone.getText().trim());
 
                     clienteController.salvarCliente(clienteSelecionado);
-                    JOptionPane.showMessageDialog(this, "Cliente atualizado com sucesso!");
+                    JOptionPane.showMessageDialog(this, "Cliente updated com sucesso!");
                     btnLimpar.doClick();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, ex.getMessage());
@@ -177,6 +196,18 @@ public class FormCliente extends JFrame {
             }
         });
 
+        // NOVO: Ação do Botão Pesquisar
+        btnPesquisar.addActionListener(e -> {
+            String busca = txtPesquisa.getText().trim();
+            try {
+                // Executa o método de filtragem mapeado no controller
+                List<Cliente> resultado = clienteController.pesquisarPorNome(busca);
+                atualizarTabela(resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao pesquisar: " + ex.getMessage());
+            }
+        });
+
         // Ação do Botão Limpar / Resetar e Atualizar a JTable graficamente
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
@@ -184,20 +215,16 @@ public class FormCliente extends JFrame {
             txtRg.setText("");
             txtEndereco.setText("");
             txtTelefone.setText("");
+            txtPesquisa.setText(""); // limpa o campo de busca
             clienteSelecionado = null;
 
             btnSalvar.setEnabled(true);
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
 
-            modeloTabela.setRowCount(0);
             try {
-                List<Cliente> lista = clienteController.listarClientes();
-                for (Cliente c : lista) {
-                    modeloTabela.addRow(new Object[]{
-                        c.getId(), c.getNome(), c.getCpf(), c.getRg(), c.getEndereco(), c.getTelefone()
-                    });
-                }
+                List<Cliente> completa = clienteController.listarClientes();
+                atualizarTabela(completa);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Erro ao listar clientes: " + ex.getMessage());
             }
@@ -205,5 +232,20 @@ public class FormCliente extends JFrame {
 
         // Força a primeira carga na tabela e limpa campos ao abrir a tela
         btnLimpar.doClick();
+    }
+
+    // MÉTODO AUXILIAR PARA RECONSTRUIR AS LINHAS DA TABELA
+    private void atualizarTabela(List<Cliente> lista) {
+        modeloTabela.setRowCount(0);
+        for (Cliente c : lista) {
+            modeloTabela.addRow(new Object[]{
+                c.getId(), 
+                c.getNome(), 
+                c.getCpf(), 
+                c.getRg(), 
+                c.getEndereco(), 
+                c.getTelefone()
+            });
+        }
     }
 }
