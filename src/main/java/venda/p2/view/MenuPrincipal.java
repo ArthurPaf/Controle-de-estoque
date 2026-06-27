@@ -5,12 +5,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import venda.p2.controller.UsuarioController;
+import venda.p2.controller.VendaController; // Importa o controlador para verificar a sessão do usuário
+import venda.p2.model.Usuario;
+
 public class MenuPrincipal extends JFrame {
 
+    private JButton btnUsuarios; // Declarado como atributo para podermos manipular a permissão no final
+
     public MenuPrincipal() {
-        // Configurações Básicas da Janela Principal
+        // Configurações Básicas da Janela Principal (Ajustado tamanho para comportar mais botões)
         setTitle("Sistema de Controle de Estoque e Vendas");
-        setSize(500, 400);
+        setSize(550, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Fecha o programa inteiro ao fechar o menu
         setLocationRelativeTo(null); // Centraliza na tela
         setLayout(new BorderLayout());
@@ -27,9 +33,9 @@ public class MenuPrincipal extends JFrame {
         
         add(painelCabecalho, BorderLayout.NORTH);
 
-        // 2. Painel Central com os Botões (Grid Layout de 3 linhas e 2 colunas)
-        JPanel painelBotoes = new JPanel(new GridLayout(3, 2, 15, 15));
-        painelBotoes.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        // 2. Painel Central com os Botões (Grid Layout ajustado para 4 linhas e 3 colunas)
+        JPanel painelBotoes = new JPanel(new GridLayout(4, 3, 15, 15));
+        painelBotoes.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
 
         // Criando os botões de acesso
         JButton btnCategorias = new JButton("📦 Cadastrar Categorias");
@@ -42,12 +48,13 @@ public class MenuPrincipal extends JFrame {
         JButton btnFinanceiro = new JButton("💰 Gerenciar Financeiro");
         JButton btnVendas = new JButton("🛒 Registrar Venda");
         JButton btnCompras = new JButton("📈 Registrar Compra");
+        btnUsuarios = new JButton("👥 Gerenciar Usuários"); // NOVO BOTÃO ADICIONADO
         JButton btnSair = new JButton("❌ Sair do Sistema");
 
         // Estilizando os botões para não ficar com aquela cara padrão antiga do Windows
-        JButton[] botoes = {btnCategorias, btnProdutos, btnFornecedor, btnClientes, btnTipoConta, btnFormaPagamento, btnParcelas, btnFinanceiro, btnVendas, btnCompras, btnSair};
+        JButton[] botoes = {btnCategorias, btnProdutos, btnFornecedor, btnClientes, btnTipoConta, btnFormaPagamento, btnParcelas, btnFinanceiro, btnVendas, btnCompras, btnUsuarios, btnSair};
         for (JButton btn : botoes) {
-            btn.setFont(new Font("Arial", Font.PLAIN, 14));
+            btn.setFont(new Font("Arial", Font.PLAIN, 13));
             btn.setFocusPainted(false);
         }
         btnSair.setBackground(new Color(255, 102, 102)); // Destaca o botão sair em vermelho fosco
@@ -64,6 +71,7 @@ public class MenuPrincipal extends JFrame {
         painelBotoes.add(btnFinanceiro);
         painelBotoes.add(btnVendas);
         painelBotoes.add(btnCompras);
+        painelBotoes.add(btnUsuarios); // Adicionado ao painel
         painelBotoes.add(btnSair);
 
         add(painelBotoes, BorderLayout.CENTER);
@@ -83,7 +91,6 @@ public class MenuPrincipal extends JFrame {
         btnCategorias.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Instancia e abre a tela que criamos antes
                 FormCategoria telaCategoria = new FormCategoria();
                 telaCategoria.setVisible(true);
             }
@@ -143,7 +150,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
-
+        // Abrir Tela do Financeiro
         btnFinanceiro.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -152,6 +159,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
+        // Abrir Tela de Vendas
         btnVendas.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -160,12 +168,21 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
-
+        // Abrir Tela de Compras
         btnCompras.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FormCompra telaCompra = new FormCompra();
                 telaCompra.setVisible(true);
+            }
+        });
+
+        // NOVO: Abrir Tela de Cadastro de Usuários
+        btnUsuarios.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FormUsuario telaUsuario = new FormUsuario();
+                telaUsuario.setVisible(true);
             }
         });
 
@@ -176,7 +193,10 @@ public class MenuPrincipal extends JFrame {
                 System.exit(0);
             }
         });
-        
+
+        // =====================================================================
+        // CONTROLE DE ACESSO VISUAL: SÓ EXIBE SE QUEM ESTÁ LOGADO FOR ADMIN
+        // =====================================================================
         
     }
 }

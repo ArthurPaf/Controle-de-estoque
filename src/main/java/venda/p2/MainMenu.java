@@ -2,6 +2,7 @@ package venda.p2;
 
 import javax.swing.SwingUtilities;
 import venda.p2.view.FormLogin;
+import venda.p2.view.MenuPrincipal;
 
 public class MainMenu {
     public static void main(String[] args) {
@@ -10,9 +11,10 @@ public class MainMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // CHAMADA CORRETA: Abre a tela de login primeiro
-                FormLogin login = new FormLogin();
+                // 1. Abre a tela de login usando o construtor padrão
+                FormLogin login = new FormLogin(); 
                 login.setVisible(true);
+
             }
         });
     }
