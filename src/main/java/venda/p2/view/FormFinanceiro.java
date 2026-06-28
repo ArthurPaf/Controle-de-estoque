@@ -11,6 +11,7 @@ import venda.p2.controller.FinanceiroController;
 import venda.p2.model.Financeiro;
 import venda.p2.model.FormaPagamento;
 import venda.p2.model.TipoConta;
+import venda.p2.controller.RelatorioService; // Importado para emitir o JasperReport
 
 public class FormFinanceiro extends JFrame {
 
@@ -18,7 +19,7 @@ public class FormFinanceiro extends JFrame {
     private JComboBox<TipoConta> cbTipoConta;
     private JComboBox<FormaPagamento> cbFormaPagamento;
     private JTextField txtValor;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar;
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnImprimir; // Mantido btnImprimir
     private JTable tabelaFinanceiro;
     private DefaultTableModel modeloTabela;
 
@@ -36,7 +37,7 @@ public class FormFinanceiro extends JFrame {
         financeiroController = new FinanceiroController();
 
         setTitle("Lançamentos Financeiros (Contas Pagar/Receber)");
-        setSize(800, 630); // Ajustado ligeiramente para comportar a barra de filtros
+        setSize(800, 630); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -73,6 +74,7 @@ public class FormFinanceiro extends JFrame {
         btnSalvar = new JButton("Lançar Conta");
         btnEditar = new JButton("Atualizar");
         btnExcluir = new JButton("Excluir Lançamento");
+        btnImprimir = new JButton("🖨️ Gerar Relatório"); 
         btnLimpar = new JButton("Limpar");
 
         btnEditar.setEnabled(false);
@@ -81,6 +83,7 @@ public class FormFinanceiro extends JFrame {
         painelAcoes.add(btnSalvar);
         painelAcoes.add(btnEditar);
         painelAcoes.add(btnExcluir);
+        painelAcoes.add(btnImprimir); 
         painelAcoes.add(btnLimpar);
 
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
@@ -89,13 +92,13 @@ public class FormFinanceiro extends JFrame {
 
         painelTopoPrincipal.add(painelCampos);
 
-        // --- 2. NOVO: PAINEL DE FILTROS E BUSCA POR FLUXO/CATEGORIA ---
+        // --- 2. PAINEL DE FILTROS E BUSCA POR FLUXO/CATEGORIA ---
         JPanel painelFiltros = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
         painelFiltros.setBorder(BorderFactory.createTitledBorder("Filtrar Histórico de Contas"));
 
         cbFiltroFluxo = new JComboBox<>(new String[]{"TODOS", "A Pagar (Saídas)", "A Receber (Entradas)"});
         cbFiltroCategoria = new JComboBox<>();
-        cbFiltroCategoria.addItem("TODAS"); // Opção padrão para ignorar o filtro por objeto
+        cbFiltroCategoria.addItem("TODAS"); 
 
         btnPesquisar = new JButton("Filtrar Contas");
 
@@ -107,7 +110,6 @@ public class FormFinanceiro extends JFrame {
 
         painelTopoPrincipal.add(painelFiltros);
 
-        // Adiciona todo o bloco superior montado na região NORTH da tela
         add(painelTopoPrincipal, BorderLayout.NORTH);
 
         // --- 3. TABELA FINANCEIRA ---
@@ -125,7 +127,7 @@ public class FormFinanceiro extends JFrame {
             List<TipoConta> tipos = financeiroController.listarTiposConta();
             for (TipoConta tc : tipos) {
                 cbTipoConta.addItem(tc);
-                cbFiltroCategoria.addItem(tc); // Alimenta também o seletor do filtro de busca
+                cbFiltroCategoria.addItem(tc); 
             }
 
             List<FormaPagamento> formas = financeiroController.listarFormasPagamento();
@@ -153,7 +155,7 @@ public class FormFinanceiro extends JFrame {
 
                             btnSalvar.setEnabled(false);
                             btnEditar.setEnabled(true);
-                            btnExcluir.setEnabled(true);
+                            btnExcluir.setEnabled(true); // Liberado para todos os perfis
                         }
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(FormFinanceiro.this, "Erro ao selecionar item: " + ex.getMessage());
@@ -189,7 +191,7 @@ public class FormFinanceiro extends JFrame {
                     lancamentoSelecionado.setValor_total(Double.parseDouble(txtValor.getText().trim()));
 
                     financeiroController.atualizarLancamento(lancamentoSelecionado);
-                    JOptionPane.showMessageDialog(this, "Lançamento updated!");
+                    JOptionPane.showMessageDialog(this, "Lançamento atualizado!");
                     btnLimpar.doClick();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
@@ -215,19 +217,28 @@ public class FormFinanceiro extends JFrame {
             }
         });
 
-        // NOVO: Ação do Botão Pesquisar (Executa o filtro dinâmico)
+        // Ação do Botão Imprimir (Chama o serviço do JasperReport)
+        btnImprimir.addActionListener(e -> {
+            try {
+                java.util.Map<String, Object> parametros = new java.util.HashMap<>();
+                RelatorioService service = new RelatorioService();
+                service.gerarRelatorio("Simple_Blue", parametros);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Não foi possível emitir o relatório financeiro:\n" + ex.getMessage(), 
+                                              "Erro no JasperReports", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Ação do Botão Pesquisar (Executa o filtro dinâmico)
         btnPesquisar.addActionListener(e -> {
             try {
-                // Descobre a escolha do fluxo numérico (0=TODOS, 1=A Pagar, 2=A Receber)
                 int fluxoSelecionado = cbFiltroFluxo.getSelectedIndex();
                 
-                // Pega o objeto da categoria caso não seja a string padrão "TODAS"
                 TipoConta categoriaFiltro = null;
                 if (cbFiltroCategoria.getSelectedIndex() > 0) {
                     categoriaFiltro = (TipoConta) cbFiltroCategoria.getSelectedItem();
                 }
 
-                // Chama o método que deve ser criado no seu FinanceiroController
                 List<Financeiro> resultado = financeiroController.filtrarLancamentos(fluxoSelecionado, categoriaFiltro);
                 preencherTabela(resultado);
             } catch (Exception ex) {
@@ -258,11 +269,9 @@ public class FormFinanceiro extends JFrame {
             }
         });
 
-        // Primeira carga na JTable e reset de botões ao instanciar a tela
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS DA TABELA FINANCEIRA
     private void preencherTabela(List<Financeiro> lista) {
         modeloTabela.setRowCount(0);
         for (Financeiro f : lista) {

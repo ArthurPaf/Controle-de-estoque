@@ -727,3 +727,122 @@
 2026-06-27 20:06:03 [AWT-EventQueue-0] INFO  venda.p2.controller.VendaController - Método consultarVendasComFiltros() executado.
 2026-06-27 20:06:16 [AWT-EventQueue-0] INFO  venda.p2.controller.VendaController - Método consultarVendasComFiltros() executado.
 2026-06-27 20:06:19 [AWT-EventQueue-0] INFO  venda.p2.controller.VendaController - Método consultarVendasComFiltros() executado.
+2026-06-28 12:45:09 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 12:45:09 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 12:45:10 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 12:45:10 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 12:45:10 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 12:45:13 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 12:45:13 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@18eb5d55] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 12:45:21 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 12:45:22 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 13:46:18 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 13:46:18 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 13:46:18 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 13:46:19 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 13:46:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 13:46:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 13:46:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 13:46:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 13:46:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 13:46:19 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 13:46:21 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 13:46:21 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@19b00baf] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 13:46:38 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 13:46:38 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 13:46:42 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 13:46:42 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 13:46:42 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-28 13:53:28 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 13:53:28 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 13:53:28 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 13:53:29 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 13:53:29 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 13:53:29 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 13:53:29 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 13:53:29 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 13:53:29 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 13:53:29 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 13:53:33 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 13:53:33 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@208c9d5d] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 13:53:41 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 13:53:41 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 13:53:43 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 13:53:43 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 13:53:43 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-28 13:53:44 [AWT-EventQueue-0] WARN  org.hibernate.engine.jdbc.spi.SqlExceptionHelper - SQL Error: 0, SQLState: null
+2026-06-28 13:53:44 [AWT-EventQueue-0] ERROR org.hibernate.engine.jdbc.spi.SqlExceptionHelper - Erro interno no Jasper: Error loading object from InputStream.
+2026-06-28 14:07:34 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 14:07:34 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 14:07:35 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 14:07:36 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 14:07:36 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 14:07:36 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 14:07:36 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 14:07:36 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 14:07:36 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 14:07:37 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 14:07:37 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001008: Cleaning up connection pool [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 14:12:38 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 14:12:38 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 14:12:38 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 14:12:39 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 14:12:39 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 14:12:39 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 14:12:39 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 14:12:39 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 14:12:39 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 14:12:39 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 14:12:41 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 14:12:42 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@208c9d5d] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 14:12:48 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 14:12:49 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 14:12:51 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 14:12:51 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 14:12:51 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-28 14:12:52 [AWT-EventQueue-0] WARN  org.hibernate.engine.jdbc.spi.SqlExceptionHelper - SQL Error: 0, SQLState: null
+2026-06-28 14:12:52 [AWT-EventQueue-0] ERROR org.hibernate.engine.jdbc.spi.SqlExceptionHelper - Erro interno no processamento do Jasper: org.xml.sax.SAXParseException; lineNumber: 2; columnNumber: 211; cvc-complex-type.3.2.2: O atributo 'uuid' não pode aparecer no elemento 'jasperReport'.
+2026-06-28 14:16:45 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 14:16:45 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 14:16:45 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 14:16:46 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 14:16:46 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 14:16:46 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 14:16:46 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 14:16:46 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 14:16:46 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 14:16:46 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 14:16:51 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 14:16:51 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@fd63f81] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 14:16:59 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 14:16:59 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 14:17:01 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 14:17:01 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 14:17:01 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-28 14:17:03 [AWT-EventQueue-0] WARN  org.hibernate.engine.jdbc.spi.SqlExceptionHelper - SQL Error: 0, SQLState: null
+2026-06-28 14:17:03 [AWT-EventQueue-0] ERROR org.hibernate.engine.jdbc.spi.SqlExceptionHelper - Erro interno no processamento do Jasper: org.xml.sax.SAXParseException; lineNumber: 2; columnNumber: 211; cvc-complex-type.3.2.2: O atributo 'uuid' não pode aparecer no elemento 'jasperReport'.
+2026-06-28 14:20:02 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-28 14:20:02 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-28 14:20:03 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-28 14:20:04 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-28 14:20:04 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-28 14:20:04 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-28 14:20:04 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-28 14:20:04 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-28 14:20:04 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-28 14:20:04 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-28 14:20:07 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-28 14:20:07 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@6616da10] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2026-06-28 14:20:13 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Tentativa de login para o usuário: adm
+2026-06-28 14:20:14 [AWT-EventQueue-0] INFO  venda.p2.controller.UsuarioController - Usuário 'adm' logado com sucesso como [ADMIN]
+2026-06-28 14:20:16 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 14:20:16 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 14:20:16 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
+2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
+2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
