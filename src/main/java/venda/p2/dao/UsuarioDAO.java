@@ -16,17 +16,17 @@ public class UsuarioDAO {
         genericDAO.salvar(usuario);
     }
 
-    // Método essencial para autenticar o usuário no login
+    
     public Usuario buscarPorLoginESenha(String login, String senha) throws Exception {
         EntityManager em = GenericDAO.getEntityManager();
         try {
             return em.createQuery(
                 "SELECT u FROM Usuario u WHERE u.login = :login AND u.senha = :senha", Usuario.class)
                 .setParameter("login", login)
-                .setParameter("senha", senha) // Se usar criptografia no futuro, a senha entra aqui criptografada
+                .setParameter("senha", senha) 
                 .getSingleResult();
         } catch (NoResultException e) {
-            // Retorna null se não encontrar nenhum usuário com essas credenciais
+            
             return null;
         } finally {
             em.close();

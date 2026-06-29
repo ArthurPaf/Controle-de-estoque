@@ -16,7 +16,6 @@ import venda.p2.model.Fornecedor;
 
 public class FormCompra extends JFrame {
 
-    // Componentes da Aba 1
     private JComboBox<Fornecedor> cbFornecedor; 
     private JComboBox<Produto> cbProduto;
     private JTextField txtQuantidade, txtPrecoCusto, txtTotalGeral;
@@ -24,10 +23,9 @@ public class FormCompra extends JFrame {
     private JTable tabelaItens;
     private DefaultTableModel modeloTabela;
 
-    // Componentes da Aba 2 (Filtros Avançados e Tabelas)
     private JFormattedTextField txtFiltroDataInicio;
     private JFormattedTextField txtFiltroDataFim;
-    private JComboBox<Object> cbFiltroFornecedor; // Aceita String "Todos" e Objetos Fornecedor
+    private JComboBox<Object> cbFiltroFornecedor; 
     private JButton btnPesquisarFiltro;
     private JTable tabelaHistoricoCompras;
     private DefaultTableModel modeloHistoricoCompras;
@@ -49,9 +47,8 @@ public class FormCompra extends JFrame {
         
         JTabbedPane abas = new JTabbedPane();
 
-        // =========================================================================
+        
         // ABA 1: REGISTRAR COMPRA
-        // =========================================================================
         JPanel painelNovaCompra = new JPanel(new BorderLayout());
 
         JPanel painelCabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
@@ -120,9 +117,8 @@ public class FormCompra extends JFrame {
         painelInferior.add(painelBotoesFinais, BorderLayout.SOUTH);
         painelNovaCompra.add(painelInferior, BorderLayout.SOUTH);
 
-        // =========================================================================
-        // ABA 2: HISTÓRICO DE COMPRAS (PAINEL DE FILTROS APLICADO COM COMPORTAMENTO)
-        // =========================================================================
+        
+        // ABA 2: HISTÓRICO DE COMPRAS
         JPanel painelAbaHistoricoCompleta = new JPanel(new BorderLayout());
 
         JPanel painelFiltrosPesquisa = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 10));
@@ -134,11 +130,11 @@ public class FormCompra extends JFrame {
             txtFiltroDataInicio = new JFormattedTextField(mascaraData);
             txtFiltroDataFim = new JFormattedTextField(mascaraData);
 
-            // Reverte em caso de digitação parcial
+            
             txtFiltroDataInicio.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
             txtFiltroDataFim.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 
-            // Listeners para manter as barrinhas estruturadas visíveis se apagar tudo
+            
             txtFiltroDataInicio.addFocusListener(new java.awt.event.FocusAdapter() {
                 @Override
                 public void focusLost(java.awt.event.FocusEvent e) {
@@ -205,9 +201,8 @@ public class FormCompra extends JFrame {
         abas.addTab("📋 Histórico de Compras", painelAbaHistoricoCompleta);
         add(abas, BorderLayout.CENTER);
 
-        // =========================================================================
+       
         // LISTENERS
-        // =========================================================================
         
         abas.addChangeListener(e -> {
             if (abas.getSelectedIndex() == 1) {
@@ -337,23 +332,23 @@ public class FormCompra extends JFrame {
             idFornecedor = ((Fornecedor) fornecedorSelecionado).getId();
         }
 
-        // Busca os dados filtrados do banco via Controller
+        
         List<Compra> compras = compraController.consultarComprasComFiltros(dataInicio, dataFim, idFornecedor);
         
         for (Compra c : compras) {
             String nomeFornecedor = (c.getFornecedor() != null) ? c.getFornecedor().getNomeFantasia() : "Não Informado";
             
-            // CORREÇÃO AQUI: Captura a data real guardada no objeto vindo do banco
+            
             String dataFormatada = "Não informada";
             if (c.getDataCompra() != null) {
-                // Pega a data (que está no formato do banco) e transforma em DD/MM/AAAA para a tabela
+                
                 dataFormatada = c.getDataCompra().format(formatadorExibicao);
             }
             
             modeloHistoricoCompras.addRow(new Object[]{
                 c.getId(),
                 nomeFornecedor,
-                dataFormatada // Adiciona a string formatada corretamente na coluna
+                dataFormatada 
             });
         }
 

@@ -19,11 +19,10 @@ public class FormLogin extends JFrame {
 
         setTitle("SisCom - Autenticação de Usuário");
         setSize(450, 280);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Fecha a aplicação se fechar o login
-        setLocationRelativeTo(null); // Centraliza na tela
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        setLocationRelativeTo(null); 
         setResizable(false);
 
-        // Painel Principal com gradiente ou cor sólida limpa
         JPanel painelPrincipal = new JPanel(new GridBagLayout());
         painelPrincipal.setBackground(new Color(245, 247, 250));
         painelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -38,12 +37,11 @@ public class FormLogin extends JFrame {
         lblTitulo.setForeground(new Color(44, 62, 80));
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(0, 0, 15, 0); // CORRIGIDO: alterado de margin para insets
+        gbc.insets = new Insets(0, 0, 15, 0); 
         painelPrincipal.add(lblTitulo, gbc);
 
-        // Reseta margens e larguras padrão
         gbc.gridwidth = 1;
-        gbc.insets = new Insets(6, 6, 6, 6); // CORRIGIDO: alterado de margin para insets
+        gbc.insets = new Insets(6, 6, 6, 6); 
 
         // --- CAMPO LOGIN ---
         JLabel lblLogin = new JLabel("Usuário:");
@@ -76,7 +74,7 @@ public class FormLogin extends JFrame {
 
         btnEntrar = new JButton("Entrar 🔑");
         btnEntrar.setFont(new Font("Arial", Font.BOLD, 13));
-        btnEntrar.setBackground(new Color(46, 204, 113)); // Verde profissional
+        btnEntrar.setBackground(new Color(46, 204, 113)); 
         btnEntrar.setForeground(Color.WHITE);
 
         painelBotoes.add(btnSair);
@@ -84,19 +82,17 @@ public class FormLogin extends JFrame {
 
         gbc.gridx = 0; gbc.gridy = 3;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(15, 0, 0, 0); // CORRIGIDO: alterado de margin para insets
+        gbc.insets = new Insets(15, 0, 0, 0); 
         painelPrincipal.add(painelBotoes, gbc);
 
         add(painelPrincipal);
 
-        // =========================================================================
+        
         // LISTENERS / AÇÕES
-        // =========================================================================
-
+        
         // Ação do Botão Entrar
         btnEntrar.addActionListener(e -> efetuarLogin());
 
-        // Permitir que o usuário aperte "Enter" no campo de senha para logar
         txtSenha.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -122,11 +118,9 @@ public class FormLogin extends JFrame {
             "Sucesso", 
             JOptionPane.INFORMATION_MESSAGE);
 
-        // --- CONECTANDO AS TELAS AQUI ---
-        // Abre o seu menu principal que estava no MainMenu antigo
         new MenuPrincipal().setVisible(true); 
 
-        this.dispose(); // Fecha a tela de login para não ficar aberta no fundo
+        this.dispose(); 
 
     } catch (Exception ex) {
         JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Autenticação", JOptionPane.ERROR_MESSAGE);

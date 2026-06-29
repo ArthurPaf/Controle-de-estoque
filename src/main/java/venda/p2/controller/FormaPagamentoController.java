@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,10 +9,10 @@ import java.util.List;
 
 public class FormaPagamentoController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO
+    
     private static final Logger logger = LogManager.getLogger(FormaPagamentoController.class);
 
-    // Alterado para o DAO específico da classe
+    
     private FormaPagamentoDAO formaPagamentoDAO;
 
     public FormaPagamentoController() {

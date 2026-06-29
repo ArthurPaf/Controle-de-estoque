@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 public class TipoContaController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA TIPO DE CONTA
+    
     private static final Logger logger = LogManager.getLogger(TipoContaController.class);
 
     private TipoContaDAO tipoContaDAO;

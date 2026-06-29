@@ -24,7 +24,7 @@ public class RelatorioService {
                 @Override
                 public Void execute(Connection conexao) throws java.sql.SQLException {
                     try {
-                        // 1. Busca o arquivo fonte .jrxml (XML) ao invés do compilado
+                        
                         String caminho = "/relatorios/" + nomeRelatorio + ".jrxml";
                         InputStream relatorioStream = getClass().getResourceAsStream(caminho);
 
@@ -32,13 +32,13 @@ public class RelatorioService {
                             throw new Exception("O arquivo " + nomeRelatorio + ".jrxml não foi encontrado na pasta resources/relatorios/");
                         }
 
-                        // 2. Compila o relatório dinamicamente na memória (evita erro de versão do Studio)
+                        
                         JasperReport jasperReport = JasperCompileManager.compileReport(relatorioStream);
 
-                        // 3. Preenche o relatório com a conexão do banco e parâmetros
+                        
                         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parametros, conexao);
 
-                        // 4. Abre o visualizador Swing
+                        
                         JasperViewer viewer = new JasperViewer(jasperPrint, false);
                         viewer.setTitle("Visualização do Relatório Financeiro");
                         viewer.setLocationRelativeTo(null);

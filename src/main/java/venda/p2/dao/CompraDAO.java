@@ -44,7 +44,7 @@ public class CompraDAO {
         }
     }
 
-    // --- ADICIONADO: Método de busca avançada com filtros estruturados ---
+    
     public List<Compra> consultarComprasComFiltros(LocalDate dataInicio, LocalDate dataFim, Integer idFornecedor) throws Exception {
         EntityManager em = GenericDAO.getEntityManager();
         try {
@@ -60,7 +60,7 @@ public class CompraDAO {
                 hql.append("AND c.fornecedor.id = :idFornecedor ");
             }
 
-            // ATENÇÃO: Ordenando pelo atributo correto mapeado na classe (dataCompra em camelCase)
+            
             hql.append("ORDER BY c.dataCompra DESC");
 
             var query = em.createQuery(hql.toString(), Compra.class);

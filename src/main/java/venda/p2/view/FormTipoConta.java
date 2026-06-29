@@ -11,12 +11,11 @@ import venda.p2.model.TipoConta;
 
 public class FormTipoConta extends JFrame {
 
-    private JTextField txtDescricao, txtPesquisa; // txtPesquisa adicionado
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // btnPesquisar adicionado
+    private JTextField txtDescricao, txtPesquisa; 
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; 
     private JTable tabelaTipos;
     private DefaultTableModel modeloTabela;
 
-    // View comunicando-se estritamente com a camada de controle
     private TipoContaController tipoContaController;
     private TipoConta tipoSelecionado;
 
@@ -24,12 +23,12 @@ public class FormTipoConta extends JFrame {
         tipoContaController = new TipoContaController();
 
         setTitle("Gerenciar Tipos de Conta (CRUD)");
-        setSize(550, 520); // Ajustado ligeiramente na altura para acomodar a barra de busca
+        setSize(550, 520); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- PAINEL PRINCIPAL (Agrupa Formulário e Busca no Topo) ---
+        // --- PAINEL PRINCIPAL ---
         JPanel painelTopo = new JPanel();
         painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
 
@@ -65,7 +64,7 @@ public class FormTipoConta extends JFrame {
 
         painelTopo.add(painelCampos);
 
-        // --- NOVO: PAINEL DE PESQUISA ---
+        // --- PAINEL DE PESQUISA ---
         JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Tipos de Conta"));
         txtPesquisa = new JTextField(20);
@@ -77,7 +76,6 @@ public class FormTipoConta extends JFrame {
 
         painelTopo.add(painelBusca);
 
-        // Adiciona o bloco empilhado no topo da janela
         add(painelTopo, BorderLayout.NORTH);
 
         // --- 3. TABELA DE COMPONENTES ---
@@ -93,7 +91,6 @@ public class FormTipoConta extends JFrame {
 
         // --- 4. EVENTOS E LISTENERS ---
 
-        // Evento de clique na tabela para carregar os campos de texto
         tabelaTipos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -116,7 +113,7 @@ public class FormTipoConta extends JFrame {
             }
         });
 
-        // Ação do Botão Salvar Novo
+        // Ação do Botão Salvar
         btnSalvar.addActionListener(e -> {
             try {
                 tipoContaController.salvarTipoConta(txtDescricao.getText().trim());
@@ -159,7 +156,7 @@ public class FormTipoConta extends JFrame {
             }
         });
 
-        // NOVO: Ação do Botão Pesquisar
+        // Ação do Botão Pesquisar
         btnPesquisar.addActionListener(e -> {
             String busca = txtPesquisa.getText().trim();
             try {
@@ -170,10 +167,10 @@ public class FormTipoConta extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Atualização Gráfica do JTable
+        // Ação do Botão Limpar 
         btnLimpar.addActionListener(e -> {
             txtDescricao.setText("");
-            txtPesquisa.setText(""); // limpa o campo de busca
+            txtPesquisa.setText(""); 
             tipoSelecionado = null;
             
             btnSalvar.setEnabled(true);
@@ -188,11 +185,11 @@ public class FormTipoConta extends JFrame {
             }
         });
 
-        // Executa a primeira varredura gráfica para popular a tabela inicial
+        
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS DA TABELA
+    
     private void atualizarTabela(List<TipoConta> lista) {
         modeloTabela.setRowCount(0);
         for (TipoConta tc : lista) {

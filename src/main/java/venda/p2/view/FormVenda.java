@@ -16,7 +16,6 @@ import venda.p2.model.VendaProduto;
 
 public class FormVenda extends JFrame {
 
-    // Componentes da Aba 1 (Registrar Venda)
     private JComboBox<Cliente> cbCliente;
     private JComboBox<Produto> cbProduto;
     private JTextField txtQuantidade, txtPrecoUn, txtTotalGeral;
@@ -24,7 +23,6 @@ public class FormVenda extends JFrame {
     private JTable tabelaItens;
     private DefaultTableModel modeloTabela;
 
-    // Componentes da Aba 2 (Histórico de Vendas com Filtros - RF012)
     private JFormattedTextField txtFiltroDataInicio;
     private JFormattedTextField txtFiltroDataFim;
     private JComboBox<Object> cbFiltroCliente; // Usamos Object para aceitar a opção "Todos"
@@ -34,7 +32,6 @@ public class FormVenda extends JFrame {
     private JTable tabelaDetalhesItens;
     private DefaultTableModel modeloDetalhesItens;
 
-    // Controle
     private VendaController vendaController;
     private List<VendaProduto> listaItensCarrinho;
     private double totalVenda = 0.0;
@@ -51,9 +48,8 @@ public class FormVenda extends JFrame {
         
         JTabbedPane abas = new JTabbedPane();
 
-        // =========================================================================
-        // CONSTRUÇÃO DA ABA 1: REGISTRAR VENDA
-        // =========================================================================
+        
+        // ABA 1: REGISTRAR VENDA
         JPanel painelNovaVenda = new JPanel(new BorderLayout());
 
         JPanel painelCabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
@@ -122,9 +118,9 @@ public class FormVenda extends JFrame {
         painelInferior.add(painelBotoesFinais, BorderLayout.SOUTH);
         painelNovaVenda.add(painelInferior, BorderLayout.SOUTH);
 
-        // =========================================================================
-        // CONSTRUÇÃO DA ABA 2: HISTÓRICO DE VENDAS COM PAINEL DE FILTROS (RF012)
-        // =========================================================================
+        
+        // ABA 2: HISTÓRICO DE VENDAS COM PAINEL DE FILTROS
+        
         JPanel painelAbaHistoricoCompleta = new JPanel(new BorderLayout());
 
         // --- Painel Superior de Pesquisa Avançada ---
@@ -137,11 +133,11 @@ public class FormVenda extends JFrame {
             txtFiltroDataInicio = new JFormattedTextField(mascaraData);
             txtFiltroDataFim = new JFormattedTextField(mascaraData);
             
-            // Reverte para o estado anterior caso a digitação seja parcial/inválida
+            
             txtFiltroDataInicio.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
             txtFiltroDataFim.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
             
-            // Listeners para tratar a deleção completa mantendo os placeholders estruturais
+            
             txtFiltroDataInicio.addFocusListener(new java.awt.event.FocusAdapter() {
                 @Override
                 public void focusLost(java.awt.event.FocusEvent e) {
@@ -181,7 +177,7 @@ public class FormVenda extends JFrame {
 
         painelAbaHistoricoCompleta.add(painelFiltrosPesquisa, BorderLayout.NORTH);
 
-        // Painel Central com as tabelas de Mestre-Detalhe
+       
         JPanel painelTabelasHistorico = new JPanel(new GridLayout(2, 1, 0, 10));
 
         modeloHistoricoVendas = new DefaultTableModel(new Object[]{"ID Venda", "Cliente", "Data"}, 0) {
@@ -204,14 +200,13 @@ public class FormVenda extends JFrame {
 
         painelAbaHistoricoCompleta.add(painelTabelasHistorico, BorderLayout.CENTER);
 
-        // Adiciona as abas estruturadas
+       
         abas.addTab("🛒 Registrar Venda", painelNovaVenda);
         abas.addTab("📋 Histórico de Vendas", painelAbaHistoricoCompleta);
         add(abas, BorderLayout.CENTER);
 
-        // =========================================================================
+        
         // EVENTOS E LISTENERS
-        // =========================================================================
         
         abas.addChangeListener(e -> {
             if (abas.getSelectedIndex() == 1) {

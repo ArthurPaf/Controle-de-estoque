@@ -5,17 +5,15 @@ import org.apache.logging.log4j.Logger;
 import venda.p2.dao.UsuarioDAO;
 import venda.p2.model.Usuario;
 
-public class UsuarioController { // Ou UsuarioController, dependendo de como dividiu os controllers
+public class UsuarioController { 
 
     private static final Logger logger = LogManager.getLogger(UsuarioController.class);
     private UsuarioDAO usuarioDAO = new UsuarioDAO();
 
-    // Guarda globalmente quem está usando o sistema no momento
+    
     private static Usuario usuarioLogado;
 
-    /**
-     * Efetua o login usando o método existente no seu DAO.
-     */
+   
     public Usuario autenticar(String login, String senha) throws Exception {
         logger.info("Tentativa de login para o usuário: {}", login);
 
@@ -23,7 +21,7 @@ public class UsuarioController { // Ou UsuarioController, dependendo de como div
             throw new Exception("Por favor, preencha o login e a senha.");
         }
 
-        // Chama diretamente o método que você já criou
+        
         Usuario usuario = usuarioDAO.buscarPorLoginESenha(login.trim(), senha);
 
         if (usuario == null) {
@@ -32,15 +30,13 @@ public class UsuarioController { // Ou UsuarioController, dependendo de como div
         }
 
         logger.info("Usuário '{}' logado com sucesso como [{}]", usuario.getLogin(), usuario.getPerfil());
-        usuarioLogado = usuario; // Salva o usuário na sessão
+        usuarioLogado = usuario; 
         return usuario;
     }
 
-    /**
-     * Cadastra um novo usuário se o usuário da sessão atual for um ADMIN.
-     */
+   
     public void cadastrarNovoUsuario(Usuario novoUsuario) throws Exception {
-        // 1. Validação de Segurança: Checa quem está logado no sistema
+        
         if (usuarioLogado == null) {
             throw new Exception("Nenhum usuário está logado no sistema.");
         }
@@ -50,14 +46,14 @@ public class UsuarioController { // Ou UsuarioController, dependendo de como div
             throw new Exception("Acesso Negado! Apenas administradores podem cadastrar novos usuários.");
         }
 
-        // 2. Validações básicas do novo usuário
+        
         if (novoUsuario.getLogin() == null || novoUsuario.getLogin().trim().isEmpty() ||
             novoUsuario.getSenha() == null || novoUsuario.getSenha().trim().isEmpty() ||
             novoUsuario.getPerfil() == null) {
             throw new Exception("Todos os campos obrigatórios (Login, Senha e Perfil) devem ser preenchidos.");
         }
 
-        // 3. Tudo correto? Invoca o método do seu DAO
+        
         usuarioDAO.salvarUsuario(novoUsuario);
         logger.info("Novo usuário '{}' [{}] cadastrado por '{}'.", novoUsuario.getLogin(), novoUsuario.getPerfil(), usuarioLogado.getLogin());
     }

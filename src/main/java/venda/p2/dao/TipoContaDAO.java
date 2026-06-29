@@ -33,7 +33,7 @@ public class TipoContaDAO {
     public List<TipoConta> buscarPorDescricao(String descricao) {
         EntityManager em = GenericDAO.getEntityManager();
         try {
-            // Nota: Se na sua Model o atributo for 'nome', mude 'f.descricao' para 'f.nome'
+           
             String jpql = "SELECT f FROM TipoConta f WHERE LOWER(TRIM(f.descricao)) LIKE LOWER(:descricao)";
             TypedQuery<TipoConta> query = em.createQuery(jpql, TipoConta.class);
             query.setParameter("descricao", "%" + descricao.trim() + "%");

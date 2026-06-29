@@ -17,11 +17,11 @@ public class VendaProduto {
     private int id;
     
     @ManyToOne
-    @JoinColumn(name = "venda_id", referencedColumnName = "id", nullable = false) // <-- Ajuste o 'name' exatamente para o nome da coluna no banco
+    @JoinColumn(name = "venda_id", referencedColumnName = "id", nullable = false) 
     private Venda venda;
     
     @ManyToOne
-    @JoinColumn(name = "produto_id", referencedColumnName = "id", nullable = false) // <-- Garanta que o 'name' seja exatamente "produto_id"
+    @JoinColumn(name = "produto_id", referencedColumnName = "id", nullable = false) 
     private Produto produto;
     
     private Double quantidade;

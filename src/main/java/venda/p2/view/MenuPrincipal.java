@@ -6,24 +6,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import venda.p2.controller.UsuarioController;
-import venda.p2.controller.VendaController; // Importa o controlador para verificar a sessão do usuário
+import venda.p2.controller.VendaController; 
 import venda.p2.model.Usuario;
 
 public class MenuPrincipal extends JFrame {
 
-    private JButton btnUsuarios; // Declarado como atributo para podermos manipular a permissão no final
+    private JButton btnUsuarios; 
 
     public MenuPrincipal() {
-        // Configurações Básicas da Janela Principal (Ajustado tamanho para comportar mais botões)
+        
         setTitle("Sistema de Controle de Estoque e Vendas");
         setSize(550, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Fecha o programa inteiro ao fechar o menu
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         setLocationRelativeTo(null); // Centraliza na tela
         setLayout(new BorderLayout());
 
         // 1. Cabeçalho da Tela
         JPanel painelCabecalho = new JPanel();
-        painelCabecalho.setBackground(new Color(45, 52, 71)); // Azul escuro elegante
+        painelCabecalho.setBackground(new Color(45, 52, 71)); 
         painelCabecalho.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         
         JLabel lblTitulo = new JLabel("MÓDULOS DO SISTEMA");
@@ -37,7 +37,7 @@ public class MenuPrincipal extends JFrame {
         JPanel painelBotoes = new JPanel(new GridLayout(4, 3, 15, 15));
         painelBotoes.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
 
-        // Criando os botões de acesso
+        
         JButton btnCategorias = new JButton("📦 Cadastrar Categorias");
         JButton btnProdutos = new JButton("🏷️ Gerenciar Produtos");
         JButton btnFornecedor = new JButton("🚚 Gerenciar Fornecedor");
@@ -48,19 +48,19 @@ public class MenuPrincipal extends JFrame {
         JButton btnFinanceiro = new JButton("💰 Gerenciar Financeiro");
         JButton btnVendas = new JButton("🛒 Registrar Venda");
         JButton btnCompras = new JButton("📈 Registrar Compra");
-        btnUsuarios = new JButton("👥 Gerenciar Usuários"); // NOVO BOTÃO ADICIONADO
+        btnUsuarios = new JButton("👥 Gerenciar Usuários"); 
         JButton btnSair = new JButton("❌ Sair do Sistema");
 
-        // Estilizando os botões para não ficar com aquela cara padrão antiga do Windows
+        
         JButton[] botoes = {btnCategorias, btnProdutos, btnFornecedor, btnClientes, btnTipoConta, btnFormaPagamento, btnParcelas, btnFinanceiro, btnVendas, btnCompras, btnUsuarios, btnSair};
         for (JButton btn : botoes) {
             btn.setFont(new Font("Arial", Font.PLAIN, 13));
             btn.setFocusPainted(false);
         }
-        btnSair.setBackground(new Color(255, 102, 102)); // Destaca o botão sair em vermelho fosco
+        btnSair.setBackground(new Color(255, 102, 102)); 
         btnSair.setForeground(Color.WHITE);
 
-        // Adicionando os botões ao Grid
+        
         painelBotoes.add(btnCategorias);
         painelBotoes.add(btnProdutos);
         painelBotoes.add(btnFornecedor);
@@ -71,12 +71,12 @@ public class MenuPrincipal extends JFrame {
         painelBotoes.add(btnFinanceiro);
         painelBotoes.add(btnVendas);
         painelBotoes.add(btnCompras);
-        painelBotoes.add(btnUsuarios); // Adicionado ao painel
+        painelBotoes.add(btnUsuarios); 
         painelBotoes.add(btnSair);
 
         add(painelBotoes, BorderLayout.CENTER);
 
-        // 3. Rodapé informativo
+        // 3. Rodapé
         JPanel painelRodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         painelRodape.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 10));
         JLabel lblStatus = new JLabel("Banco de Dados: PostgreSQL Conectado ✔");
@@ -177,7 +177,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
-        // NOVO: Abrir Tela de Cadastro de Usuários
+        // Abrir Tela de Cadastro de Usuários
         btnUsuarios.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -193,10 +193,6 @@ public class MenuPrincipal extends JFrame {
                 System.exit(0);
             }
         });
-
-        // =====================================================================
-        // CONTROLE DE ACESSO VISUAL: SÓ EXIBE SE QUEM ESTÁ LOGADO FOR ADMIN
-        // =====================================================================
         
     }
 }

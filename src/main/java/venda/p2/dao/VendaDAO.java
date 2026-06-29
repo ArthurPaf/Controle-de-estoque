@@ -24,7 +24,7 @@ public class VendaDAO {
     }
 
     public Venda salvarVenda(Venda venda) throws Exception {
-    // Altere de genericDAO.salvar(venda) para salvarERetornar
+    
     return genericDAO.salvarERetornar(venda); 
 }
 
@@ -35,7 +35,7 @@ public class VendaDAO {
     public List<Venda> listarTodasVendas() throws Exception {
     EntityManager em = GenericDAO.getEntityManager();
     try {
-        // O JOIN FETCH traz os dados do cliente na mesma consulta
+        
         return em.createQuery("SELECT v FROM Venda v JOIN FETCH v.cliente", Venda.class).getResultList();
     } finally {
         em.close();
@@ -45,7 +45,7 @@ public class VendaDAO {
     public List<VendaProduto> listarItensPorVenda(int idVenda) throws Exception {
     EntityManager em = GenericDAO.getEntityManager();
     try {
-        // Consulta para trazer os itens de uma venda específica, junto com os dados do produto
+        
         return em.createQuery(
             "SELECT vp FROM VendaProduto vp JOIN FETCH vp.produto WHERE vp.venda.id = :idVenda", 
             VendaProduto.class)
@@ -61,7 +61,7 @@ public class VendaDAO {
         try {
             StringBuilder hql = new StringBuilder("SELECT v FROM Venda v JOIN FETCH v.cliente WHERE 1=1 ");
             
-            // Filtro usando o atributo da classe Java (dataVenda)
+            
             if (dataInicio != null && dataFim != null) {
                 if (dataInicio.equals(dataFim)) {
                     hql.append("AND v.dataVenda = :dataInicio ");
@@ -73,7 +73,7 @@ public class VendaDAO {
             if (idCliente != null && idCliente > 0) {
                 hql.append("AND v.cliente.id = :idCliente ");
             }
-            // Ajustado também aqui na ordenação
+            
             hql.append("ORDER BY v.dataVenda DESC");
 
             var query = em.createQuery(hql.toString(), Venda.class);
@@ -94,22 +94,20 @@ public class VendaDAO {
         }
     }
 
-    /**
-     * Conta quantas vendas um determinado CPF realizou no mês e ano atuais.
-     */
+    
     public long contarVendasPorCpfNoMesAtual(String cpf) throws Exception {
     EntityManager em = GenericDAO.getEntityManager();
     try {
-        // Pega o primeiro e o último dia do mês atual usando o LocalDate do Java
+        
         LocalDate agora = LocalDate.now();
         LocalDate primeiroDia = agora.withDayOfMonth(1);
         LocalDate ultimoDia = agora.withDayOfMonth(agora.lengthOfMonth());
 
-        // Converte para java.util.Date se o seu atributo 'dataVenda' for do tipo Date
+        
         Date dataInicio = Date.from(primeiroDia.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date dataFim = Date.from(ultimoDia.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
-        // JPQL limpa e padrão usando BETWEEN (Sem funções específicas do banco)
+        
         String jpql = "SELECT COUNT(v) FROM Venda v WHERE v.cliente.cpf = :cpf "
                     + "AND v.dataVenda BETWEEN :dataInicio AND :dataFim";
         

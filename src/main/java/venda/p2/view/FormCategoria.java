@@ -12,8 +12,8 @@ import venda.p2.model.Categoria;
 public class FormCategoria extends JFrame {
     
     private JTextField txtNome;
-    private JTextField txtPesquisa; // NOVO CAMPO DE TEXTO PARA BUSCA
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // NOVO BOTÃO
+    private JTextField txtPesquisa; 
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; 
     private JTable tabelaCategorias;
     private DefaultTableModel modeloTabela;
     
@@ -24,12 +24,12 @@ public class FormCategoria extends JFrame {
         categoriaController = new CategoriaController();
         
         setTitle("Gerenciar Categorias (CRUD)");
-        setSize(550, 520); // Aumentado um pouco o tamanho vertical para acomodar a busca
+        setSize(550, 520); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         
-        // --- PAINEL PRINCIPAL (Agrupa o Formulário e a Pesquisa no Topo) ---
+        // --- PAINEL PRINCIPAL ---
         JPanel painelTopo = new JPanel();
         painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
 
@@ -65,7 +65,7 @@ public class FormCategoria extends JFrame {
         
         painelTopo.add(painelCampos);
 
-        // --- NOVO: 2.5 PAINEL DE PESQUISA ---
+        // 2.5 PAINEL DE PESQUISA ---
         JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Categorias"));
         txtPesquisa = new JTextField(25);
@@ -94,7 +94,7 @@ public class FormCategoria extends JFrame {
 
         // --- 4. EVENTOS E AÇÕES ---
 
-        // Evento de clique na tabela
+       
         tabelaCategorias.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -173,7 +173,7 @@ public class FormCategoria extends JFrame {
             }
         });
 
-        // NOVO: Ação do Botão Pesquisar
+        // Ação do Botão Pesquisar
         btnPesquisar.addActionListener(e -> {
             String termoBusca = txtPesquisa.getText().trim();
             try {
@@ -185,10 +185,10 @@ public class FormCategoria extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Reseta os campos e traz a lista cheia
+        // Ação do Botão Limpar 
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
-            txtPesquisa.setText(""); // Limpa o campo de busca também
+            txtPesquisa.setText(""); 
             categoriaSelecionada = null;
             btnSalvar.setEnabled(true);
             btnEditar.setEnabled(false);
@@ -202,11 +202,11 @@ public class FormCategoria extends JFrame {
             }
         });
 
-        // Carrega os dados cheios na primeira abertura da janela
+        
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA REPREENCHER AS LINHAS DA TABELA
+    
     private void atualizarTabela(List<Categoria> lista) {
         modeloTabela.setRowCount(0);
         for (Categoria cat : lista) {

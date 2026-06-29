@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class CompraController {
 
-    // 2. DECLARAÇÃO DO LOGGER
+    
     private static final Logger logger = LogManager.getLogger(CompraController.class);
 
     private CompraDAO compraDAO;
@@ -42,9 +41,9 @@ public class CompraController {
         return compraDAO.listarItensPorCompra(idCompra);
     }
 
-    // --- ADICIONADO: Método que conecta a View de Compras com os filtros do DAO ---
+    
     public List<Compra> consultarComprasComFiltros(LocalDate dataInicio, LocalDate dataFim, Integer idFornecedor) throws Exception {
-        // LOG ADICIONADO
+        
         logger.info("Método consultarComprasComFiltros() executado.");
         return compraDAO.consultarComprasComFiltros(dataInicio, dataFim, idFornecedor);
     }
@@ -60,7 +59,7 @@ public class CompraController {
             qtd = Double.parseDouble(quantidadeStr.trim());
             precoCusto = Double.parseDouble(precoCustoStr.trim());
         } catch (NumberFormatException e) {
-            // LOG ADICIONADO
+            
             logger.warn("Tentativa de adicionar item com valores numéricos inválidos na Compra.");
             throw new Exception("Valores numéricos inválidos.");
         }
@@ -76,7 +75,7 @@ public class CompraController {
     }
 
     public void finalizarCompra(Fornecedor fornecedor, List<CompraProduto> carrinho) throws Exception {
-        // LOG ADICIONADO
+        
         logger.info("Método finalizarCompra() executado.");
 
         if (fornecedor == null) {
@@ -104,7 +103,7 @@ public class CompraController {
 
             Compra compraSalva = compraDAO.salvarCompra(compra);
 
-            // LOG ADICIONADO
+            
             logger.info("Cabeçalho da compra salvo. ID: {}, Valor Total: {}", compraSalva.getId(), total);
 
             for (CompraProduto item : carrinho) {
@@ -120,15 +119,15 @@ public class CompraController {
 
                 new GenericDAO<>(Produto.class).salvar(prod);
 
-                // LOG ADICIONADO
+                
                 logger.info("Estoque atualizado (entrada) para o produto ID: {}. Novo saldo: {}", prod.getId(), estoqueAtualizado);
             }
             
-            // LOG ADICIONADO
+            
             logger.info("Compra ID: {} finalizada com sucesso.", compraSalva.getId());
 
         } catch (Exception ex) {
-            // LOG ADICIONADO
+            
             logger.error("Erro ao finalizar a compra: {}", ex.getMessage());
             throw ex;
         }

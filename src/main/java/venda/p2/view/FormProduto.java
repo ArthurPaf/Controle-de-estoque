@@ -12,9 +12,9 @@ import venda.p2.model.Categoria;
 
 public class FormProduto extends JFrame {
 
-    private JTextField txtNome, txtPreco, txtQuantidade, txtPesquisa; // txtPesquisa adicionado
+    private JTextField txtNome, txtPreco, txtQuantidade, txtPesquisa; 
     private JComboBox<Categoria> cbCategoria;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // btnPesquisar adicionado
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; 
     private JTable tabelaProdutos;
     private DefaultTableModel modeloTabela;
 
@@ -25,12 +25,12 @@ public class FormProduto extends JFrame {
         produtoController = new ProdutoController();
 
         setTitle("Gerenciar Produtos (CRUD)");
-        setSize(650, 550); // Ajustado para acomodar os novos componentes
+        setSize(650, 550); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- PAINEL PRINCIPAL (Agrupa Formulário e Busca no Topo) ---
+        // --- PAINEL PRINCIPAL ---
         JPanel painelTopo = new JPanel();
         painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
 
@@ -46,7 +46,7 @@ public class FormProduto extends JFrame {
         txtQuantidade = new JTextField(10);
         cbCategoria = new JComboBox<>();
 
-        // Carrega as categorias no ComboBox
+       
         carregarCategorias();
 
         gbc.gridx = 0; gbc.gridy = 0; painelCampos.add(new JLabel("Nome:"), gbc);
@@ -81,7 +81,7 @@ public class FormProduto extends JFrame {
 
         painelTopo.add(painelCampos);
 
-        // --- NOVO: PAINEL DE PESQUISA ---
+        // --- PAINEL DE PESQUISA ---
         JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Produtos"));
         txtPesquisa = new JTextField(25);
@@ -110,7 +110,6 @@ public class FormProduto extends JFrame {
 
         // --- 4. EVENTOS ---
 
-        // Clique na tabela para preencher os campos
         tabelaProdutos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -185,11 +184,11 @@ public class FormProduto extends JFrame {
             }
         });
 
-        // NOVO: Ação do Botão Pesquisar
+        // Ação do Botão Pesquisar
         btnPesquisar.addActionListener(e -> {
             String busca = txtPesquisa.getText().trim();
             try {
-                // Utiliza o método mapeado no ProdutoController que criamos no passo anterior
+                
                 List<Produto> resultado = produtoController.pesquisarPorNome(busca);
                 atualizarTabela(resultado);
             } catch (Exception ex) {
@@ -197,12 +196,12 @@ public class FormProduto extends JFrame {
             }
         });
 
-        // Botão Limpar / Resetar estado da tela
+        // Botão Limpar 
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
             txtPreco.setText("");
             txtQuantidade.setText("");
-            txtPesquisa.setText(""); // limpa o campo de busca
+            txtPesquisa.setText("");
             if (cbCategoria.getItemCount() > 0) cbCategoria.setSelectedIndex(0);
             
             produtoSelecionado = null;
@@ -218,11 +217,9 @@ public class FormProduto extends JFrame {
             }
         });
 
-        // Inicializa a tabela cheia ao abrir
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS
     private void atualizarTabela(List<Produto> lista) {
         modeloTabela.setRowCount(0);
         for (Produto prod : lista) {

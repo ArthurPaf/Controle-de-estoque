@@ -20,7 +20,6 @@ public class FormParcelas extends JFrame {
     private JTextField txtDesconto, txtAcrescimo, txtValorFinal;
     private JButton btnBaixa;
 
-    // View conversando estritamente com o Controller da Regra de Negócio
     private FinanceiroParcelaController parcelaController;
     private FinanceiroParcela parcelaSelecionada;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -34,7 +33,7 @@ public class FormParcelas extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- TOPO: SELEÇÃO DA CONTA MESTRE ---
+        // SELEÇÃO DA CONTA
         JPanel painelTopo = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         painelTopo.setBorder(BorderFactory.createTitledBorder("Selecionar Lançamento Financeiro"));
         cbContas = new JComboBox<>();
@@ -43,7 +42,7 @@ public class FormParcelas extends JFrame {
         painelTopo.add(cbContas);
         add(painelTopo, BorderLayout.NORTH);
 
-        // --- CENTRO: TABELA DE PARCELAS ---
+        // TABELA DE PARCELAS
         modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nº Parcela", "Vencimento", "Valor Original", "Status", "Data Pagamento", "Valor Final"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -53,7 +52,7 @@ public class FormParcelas extends JFrame {
         scroll.setBorder(BorderFactory.createTitledBorder("Parcelas Deste Lançamento"));
         add(scroll, BorderLayout.CENTER);
 
-        // --- INFERIOR: FORMULÁRIO DE BAIXA ---
+        // FORMULÁRIO DE BAIXA
         JPanel painelInferior = new JPanel(new GridBagLayout());
         painelInferior.setBorder(BorderFactory.createTitledBorder("Ações de Pagamento / Recebimento"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -78,23 +77,17 @@ public class FormParcelas extends JFrame {
 
         // --- EVENTOS E LISTENERS ---
 
-        // Evento ao mudar a seleção do JComboBox de Contas (Atualiza Tabela de Parcelas)
         cbContas.addActionListener(e -> {
             modeloTabela.setRowCount(0);
             int index = cbContas.getSelectedIndex();
             if (index >= 0 && listaContas != null) {
                 Financeiro fSelecionadoOld = listaContas.get(index);
                 try {
-                    // CATCH DA ATUALIZAÇÃO: Busca o Financeiro atualizado direto do banco de dados pelo ID
-                    // Isso garante que alterações feitas em outras telas apareçam aqui na mesma hora!
                     Financeiro fSelecionado = parcelaController.buscarContaPorId(fSelecionadoOld.getId());
-                    
-                    // Se você tiver algum campo na tela mostrando o valor mestre do lançamento, atualize ele aqui:
-                    // Exemplo: txtValorMestre.setText(String.valueOf(fSelecionado.getValor_total()));
 
                     List<FinanceiroParcela> parcelas = parcelaController.listarParcelasPorConta(fSelecionado.getId());
                     for (FinanceiroParcela p : parcelas) {
-                        // Correção visual do status: 1 = Aberta (Conforme seu clique na JTable exige status == 1)
+                    
                         String statusStr = (p.getStatus() == 1) ? "🔴 Aberta" : "🟢 Paga";
                         String dtPgto = (p.getData_pagamento() != null) ? sdf.format(p.getData_pagamento()) : "-";
                         
@@ -102,7 +95,7 @@ public class FormParcelas extends JFrame {
                             p.getId(), 
                             p.getN_parcela(), 
                             p.getData_vencimento() != null ? sdf.format(p.getData_vencimento()) : "-",
-                            p.getValor_original(), // Agora exibe o valor da parcela atualizado do banco!
+                            p.getValor_original(), 
                             statusStr, 
                             dtPgto, 
                             p.getValor_final()
@@ -115,7 +108,7 @@ public class FormParcelas extends JFrame {
             }
         });
 
-        // Evento de clique na JTable para recuperar e selecionar a parcela da linha
+        
         tabelaParcelas.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -155,7 +148,7 @@ public class FormParcelas extends JFrame {
                     txtAcrescimo.setText("0.00");
                     txtValorFinal.setText("");
                     
-                    // Força um gatilho de atualização na tabela recarregando o index do ComboBox
+                    
                     int indexAtual = cbContas.getSelectedIndex();
                     cbContas.setSelectedIndex(-1);
                     cbContas.setSelectedIndex(indexAtual);
@@ -167,7 +160,6 @@ public class FormParcelas extends JFrame {
             }
         });
 
-        // Carga Inicial do ComboBox de Contas Mestre
         try {
             cbContas.removeAllItems();
             listaContas = parcelaController.listarTodasContas();
@@ -176,9 +168,9 @@ public class FormParcelas extends JFrame {
                 String descricaoTipo = (f.getTipoConta() != null) ? f.getTipoConta().getDescricao() : "";
                 cbContas.addItem(f.getId() + " - " + fluxo + " " + descricaoTipo + " - R$ " + f.getValor_total());
             }
-            cbContas.setSelectedIndex(-1); // Inicializa limpo sem disparar o listener de cara
+            cbContas.setSelectedIndex(-1); 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao inicializar lançamentos: " + e.getMessage());
         }
-    } // <-- Fim do Construtor e fim absoluto do arquivo!
+    } 
 }

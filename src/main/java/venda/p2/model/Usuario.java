@@ -17,11 +17,11 @@ public class Usuario {
     private String senha;
 
     @Column(nullable = false)
-    private String perfil; // Ex: "ADMIN", "USER"
+    private String perfil; 
 
     public Usuario() {}
 
-    // Getters e Setters...
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getLogin() { return login; }

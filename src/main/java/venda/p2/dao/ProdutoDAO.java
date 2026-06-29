@@ -33,11 +33,11 @@ public class ProdutoDAO {
     public List<Produto> buscarPorNome(String nome) {
         EntityManager em = GenericDAO.getEntityManager();
         try {
-            // Usamos TRIM para garantir que espaços soltos não estraguem o LIKE
+            
             String jpql = "SELECT p FROM Produto p WHERE LOWER(TRIM(p.nome)) LIKE LOWER(:nome)";
             TypedQuery<Produto> query = em.createQuery(jpql, Produto.class);
             
-            // Força o termo a ir limpo e cercado pelos %
+            
             query.setParameter("nome", "%" + nome.trim() + "%");
             return query.getResultList();
         } finally {

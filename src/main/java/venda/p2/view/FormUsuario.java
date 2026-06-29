@@ -9,7 +9,7 @@ public class FormUsuario extends JFrame {
 
     private JTextField txtNome, txtLogin;
     private JPasswordField txtSenha;
-    private JComboBox<String> cbPerfil; // Seletor de ADMIN / OPERADOR
+    private JComboBox<String> cbPerfil; 
     private JButton btnSalvar;
     private UsuarioController usuarioController;
 
@@ -28,7 +28,6 @@ public class FormUsuario extends JFrame {
         txtLogin = new JTextField(15);
         txtSenha = new JPasswordField(15);
         
-        // ComboBox com as duas opções solicitadas
         cbPerfil = new JComboBox<>(new String[]{"OPERADOR", "ADMIN"});
 
         gbc.gridx = 0; gbc.gridy = 0; add(new JLabel("Nome:"), gbc);
@@ -47,9 +46,7 @@ public class FormUsuario extends JFrame {
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         add(btnSalvar, gbc);
 
-        // =====================================================================
-        // TRAVA VISUAL DA TELA COM BASE NO LOGADO
-        // =====================================================================
+        
         Usuario logado = UsuarioController.getUsuarioLogado();
         if (logado == null || !logado.getPerfil().equalsIgnoreCase("ADMIN")) {
             // Se não for admin, desativa o botão de salvar e avisa na tela
@@ -65,17 +62,15 @@ public class FormUsuario extends JFrame {
         Usuario novo = new Usuario();
         novo.setLogin(txtLogin.getText().trim());
         novo.setSenha(new String(txtSenha.getPassword()));
-        
-        // Pega o valor selecionado no JComboBox do Perfil (Ex: "ADMIN" ou "OPERADOR")
         novo.setPerfil(cbPerfil.getSelectedItem().toString()); 
 
-        // Envia para o método do controller que criamos acima
+       
         usuarioController.cadastrarNovoUsuario(novo);
 
         JOptionPane.showMessageDialog(this, "Usuário cadastrado com sucesso!");
         this.dispose();
     } catch (Exception ex) {
-        // Se não for admin, a exceção cai aqui e avisa o operador
+        
         JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Permissão", JOptionPane.ERROR_MESSAGE);
     }
 });

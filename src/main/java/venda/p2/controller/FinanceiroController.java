@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class FinanceiroController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA FINANCEIRO
+    
     private static final Logger logger = LogManager.getLogger(FinanceiroController.class);
 
     private FinanceiroDAO financeiroDAO;
@@ -70,11 +69,11 @@ public class FinanceiroController {
         f.setValor_total(valorTotal);
         f.setData_conta(new java.util.Date());
 
-        // Salva o pai para obter a ID gerada
+        
         Financeiro fSalvo = financeiroDAO.salvarERetornar(f);
         logger.info("Lançamento Pai salvo. ID Gerado: {} | Tipo: {}", fSalvo.getId(), (fSalvo.getPagar_ou_receber() == 1 ? "PAGAR" : "RECEBER"));
 
-        // Regra de Negócio: Desmembramento e cálculo temporal das parcelas
+        
         int qtdParcelas = (fp != null && fp.getQtde_parcela() > 0) ? fp.getQtde_parcela() : 1;
         double valorPorParcela = valorTotal / qtdParcelas;
         long prazoEmMilissegundos = (fp != null) ? fp.getPrazo() * 24L * 60L * 60L * 1000L : 0L;
@@ -88,7 +87,7 @@ public class FinanceiroController {
             parcela.setN_parcela(i);
             parcela.setValor_original(valorPorParcela);
             parcela.setValor_final(valorPorParcela);
-            parcela.setStatus(1); // 1 - Aberto/Pendente
+            parcela.setStatus(1); 
 
             if (i > 1) {
                 dataVencimentoAtual = new java.util.Date(dataVencimentoAtual.getTime() + prazoEmMilissegundos);
@@ -112,18 +111,18 @@ public class FinanceiroController {
         logger.info("Método atualizarLancamento() executado para o Lançamento ID: {}", f.getId());
         
         try {
-            // 1. Atualiza os dados do Lançamento Pai no banco
+            
             financeiroDAO.salvar(f);
             
-            // 2. Busca as parcelas que já existem associadas a este lançamento
+            
             List<FinanceiroParcela> parcelasExistentes = financeiroDAO.listarParcelasPorLancamento(f.getId());
             
             if (parcelasExistentes != null && !parcelasExistentes.isEmpty()) {
-                // 3. Regra de Negócio: Divide o NOVO valor total pela quantidade de parcelas que já existem
+                
                 double novoValorPorParcela = f.getValor_total() / parcelasExistentes.size();
                 logger.info("Recalculando parcelas existentes. Nova cota por parcela: R$ {}", novoValorPorParcela);
                 
-                // 4. Varre a lista de parcelas aplicando o novo valor apenas nas que estão em aberto
+                
                 for (FinanceiroParcela parcela : parcelasExistentes) {
                     if (parcela.getStatus() == 1) { 
                         parcela.setValor_original(novoValorPorParcela);
@@ -131,7 +130,7 @@ public class FinanceiroController {
                     }
                 }
                 
-                // 5. Salva em lote a lista de parcelas com os valores atualizados
+                
                 financeiroDAO.salvarParcelas(parcelasExistentes);
                 logger.info("Valores das parcelas atualizados com sucesso no banco.");
             }
@@ -153,11 +152,7 @@ public class FinanceiroController {
     }
 
     public List<Financeiro> filtrarLancamentos(int fluxo, TipoConta tipoConta) throws Exception {
-    // 1 -> Se fluxo for 0 (TODOS), passamos null ou vazio para a busca dinâmica do DAO
-    // 2 -> Se fluxo for 1 (A Pagar), passamos 1
-    // 3 -> Se fluxo for 2 (A Receber), passamos 2
     
-    // Altere a chamada abaixo de acordo com as variáveis aceitas no seu método multifiltro do DAO
     return financeiroDAO.buscarComFiltros(fluxo, tipoConta);
 }
 }

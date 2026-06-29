@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +13,7 @@ import java.util.Date;
 
 public class FinanceiroParcelaController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA AS PARCELAS
+    
     private static final Logger logger = LogManager.getLogger(FinanceiroParcelaController.class);
 
     private FinanceiroParcelaDAO parcelaDAO;
@@ -40,7 +39,7 @@ public class FinanceiroParcelaController {
         return financeiroDAO.buscarPorId(id); 
     }
 
-    // Filtra as parcelas pertencentes a um lançamento específico
+    
     public List<FinanceiroParcela> listarParcelasPorConta(int financeiroId) throws Exception {
         logger.info("Método listarParcelasPorConta() executado para o Lançamento ID: {}", financeiroId);
         
@@ -55,7 +54,7 @@ public class FinanceiroParcelaController {
         return filtradas;
     }
 
-    // Executa as regras de negócio para a baixa
+    
     public void efetuarBaixa(FinanceiroParcela p, String descontoStr, String acrescimoStr) throws Exception {
         logger.info("Método efetuarBaixa() iniciado.");
 
@@ -77,7 +76,7 @@ public class FinanceiroParcelaController {
             p.setAcrescimo(acr);
             p.setValor_final(valorFinal);
             p.setData_pagamento(new Date());
-            p.setStatus(2); // Código 2 para "Pago/Baixado"
+            p.setStatus(2); 
 
             parcelaDAO.salvar(p);
             

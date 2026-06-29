@@ -11,7 +11,7 @@ public class MainMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // 1. Abre a tela de login usando o construtor padrão
+                
                 FormLogin login = new FormLogin(); 
                 login.setVisible(true);
 

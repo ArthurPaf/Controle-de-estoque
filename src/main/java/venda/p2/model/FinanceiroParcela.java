@@ -12,7 +12,7 @@ public class FinanceiroParcela {
     @Column(name = "id")
     private int id;
 
-    // ALTERADO: O banco exige "numeroparcela" (tudo junto e sem underline)
+    
     @Column(name = "n_parcela", nullable = false)
     private int n_parcela;
 
@@ -23,7 +23,7 @@ public class FinanceiroParcela {
     @Temporal(TemporalType.DATE)
     private Date data_vencimento;
 
-    // ALTERADO: O banco exige "valorparcela" (tudo junto e sem underline)
+    
     @Column(name = "valor_original", nullable = false)
     private double valor_original;
 
@@ -50,7 +50,7 @@ public class FinanceiroParcela {
     public FinanceiroParcela() {
     }
 
-    // --- MANTENHA SEUS GETTERS E SETTERS DO JEITO QUE JÁ ESTÃO ---
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

@@ -10,7 +10,7 @@ public class CategoriaDAO {
     private GenericDAO<Categoria> genericDAO;
 
     public CategoriaDAO() {
-        // Reutiliza a estrutura do seu GenericDAO que já funciona
+        
         this.genericDAO = new GenericDAO<>(Categoria.class);
     }
 
@@ -30,7 +30,7 @@ public class CategoriaDAO {
         return genericDAO.listarTodos();
     }
 
-    // Exemplo de método customizado que SÓ a Categoria precisa (O GenericDAO não tem)
+    
     public List<Categoria> buscarPorNome(String nome) {
         EntityManager em = GenericDAO.getEntityManager();
         try {

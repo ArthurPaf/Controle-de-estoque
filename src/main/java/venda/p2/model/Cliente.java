@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "cliente") // Mapeia a tabela no PostgreSQL
+@Table(name = "cliente")
 public class Cliente {
 
     @Id

@@ -28,7 +28,7 @@ public class FormFornecedor extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- PAINEL PRINCIPAL (Top) ---
+        // --- PAINEL PRINCIPAL ---
         JPanel painelTopo = new JPanel();
         painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
 
@@ -101,7 +101,6 @@ public class FormFornecedor extends JFrame {
 
         // --- 4. EVENTOS ---
 
-        // Clique na tabela
         tabelaFornecedores.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -184,7 +183,7 @@ public class FormFornecedor extends JFrame {
             }
         });
 
-        // Botão Limpar / Reset
+        // Botão Limpar
         btnLimpar.addActionListener(e -> {
             txtNomeFantasia.setText("");
             txtRazaoSocial.setText("");
@@ -207,7 +206,7 @@ public class FormFornecedor extends JFrame {
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA PREENCHER AS LINHAS
+
     private void atualizarTabela(List<Fornecedor> lista) {
         modeloTabela.setRowCount(0);
         for (Fornecedor f : lista) {

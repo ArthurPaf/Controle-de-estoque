@@ -11,7 +11,7 @@ import venda.p2.controller.FinanceiroController;
 import venda.p2.model.Financeiro;
 import venda.p2.model.FormaPagamento;
 import venda.p2.model.TipoConta;
-import venda.p2.controller.RelatorioService; // Importado para emitir o JasperReport
+import venda.p2.controller.RelatorioService; 
 
 public class FormFinanceiro extends JFrame {
 
@@ -19,16 +19,16 @@ public class FormFinanceiro extends JFrame {
     private JComboBox<TipoConta> cbTipoConta;
     private JComboBox<FormaPagamento> cbFormaPagamento;
     private JTextField txtValor;
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnImprimir; // Mantido btnImprimir
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnImprimir; 
     private JTable tabelaFinanceiro;
     private DefaultTableModel modeloTabela;
 
-    // COMPONENTES DE FILTRO ADICIONADOS
+    
     private JComboBox<String> cbFiltroFluxo;
     private JComboBox<Object> cbFiltroCategoria;
     private JButton btnPesquisar;
 
-    // View conversa estritamente com o Controller
+    
     private FinanceiroController financeiroController;
     private Financeiro lancamentoSelecionado;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -42,7 +42,7 @@ public class FormFinanceiro extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- PAINEL PRINCIPAL DO TOPO (Agrupa Campos de Cadastro e Painel de Filtros) ---
+        // --- PAINEL PRINCIPAL DO TOPO ---
         JPanel painelTopoPrincipal = new JPanel();
         painelTopoPrincipal.setLayout(new BoxLayout(painelTopoPrincipal, BoxLayout.Y_AXIS));
 
@@ -92,7 +92,7 @@ public class FormFinanceiro extends JFrame {
 
         painelTopoPrincipal.add(painelCampos);
 
-        // --- 2. PAINEL DE FILTROS E BUSCA POR FLUXO/CATEGORIA ---
+        // --- 2. PAINEL DE FILTROS E BUSCA ---
         JPanel painelFiltros = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
         painelFiltros.setBorder(BorderFactory.createTitledBorder("Filtrar Histórico de Contas"));
 
@@ -122,7 +122,7 @@ public class FormFinanceiro extends JFrame {
         scrollTabela.setBorder(BorderFactory.createTitledBorder("Livro Caixa / Histórico de Contas"));
         add(scrollTabela, BorderLayout.CENTER);
 
-        // --- CARGA INICIAL DOS COMBOBOXES ---
+        
         try {
             List<TipoConta> tipos = financeiroController.listarTiposConta();
             for (TipoConta tc : tipos) {
@@ -138,7 +138,7 @@ public class FormFinanceiro extends JFrame {
 
         // --- 4. EVENTOS E LISTENERS ---
 
-        // Clique na JTable para recuperar lançamento do banco
+        
         tabelaFinanceiro.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -164,7 +164,7 @@ public class FormFinanceiro extends JFrame {
             }
         });
 
-        // Ação do Botão Salvar (Lançar Conta)
+        // Ação do Botão Salvar 
         btnSalvar.addActionListener(e -> {
             try {
                 int tipoMov = cbMovimentacao.getSelectedIndex();
@@ -229,7 +229,7 @@ public class FormFinanceiro extends JFrame {
             }
         });
 
-        // Ação do Botão Pesquisar (Executa o filtro dinâmico)
+        // Ação do Botão Pesquisar 
         btnPesquisar.addActionListener(e -> {
             try {
                 int fluxoSelecionado = cbFiltroFluxo.getSelectedIndex();
@@ -246,7 +246,7 @@ public class FormFinanceiro extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Resetar filtros e atualizar tabela
+        // Ação do Botão Limpar 
         btnLimpar.addActionListener(e -> {
             txtValor.setText("");
             cbMovimentacao.setSelectedIndex(0);

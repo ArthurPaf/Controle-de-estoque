@@ -846,3 +846,15 @@
 2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarTiposConta() executado.
 2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarFormasPagamento() executado.
 2026-06-28 14:21:29 [AWT-EventQueue-0] INFO  venda.p2.controller.FinanceiroController - Método listarLancamentos() executado.
+2026-06-29 19:03:19 [AWT-EventQueue-0] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: siscom-pu]
+2026-06-29 19:03:19 [AWT-EventQueue-0] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-29 19:03:19 [AWT-EventQueue-0] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-06-29 19:03:19 [AWT-EventQueue-0] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using built-in connection pool (not intended for production use)
+2026-06-29 19:03:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+2026-06-29 19:03:19 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001012: Connecting with JDBC URL [jdbc:postgresql://localhost:5432/SisCom_comercial_prog2_arthur]
+2026-06-29 19:03:20 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {user=postgres, password=****}
+2026-06-29 19:03:20 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+2026-06-29 19:03:20 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.pooling - HHH10001115: Connection pool size: 20 (min=1)
+2026-06-29 19:03:20 [AWT-EventQueue-0] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-29 19:03:22 [AWT-EventQueue-0] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-29 19:03:22 [AWT-EventQueue-0] INFO  org.hibernate.orm.connections.access - HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@4672d43] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.

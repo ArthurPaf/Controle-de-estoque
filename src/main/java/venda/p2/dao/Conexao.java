@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexao {
-    // Ajuste o nome do banco de dados conforme o seu projeto
+    
     private static final String URL = "jdbc:postgresql://localhost:5432/SisCom _comercial_prog2_Arthur";
     private static final String USUARIO = "postgres";
     private static final String SENHA = "1234";

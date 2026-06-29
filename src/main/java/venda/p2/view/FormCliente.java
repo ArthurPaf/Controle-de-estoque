@@ -11,12 +11,12 @@ import venda.p2.model.Cliente;
 
 public class FormCliente extends JFrame {
 
-    private JTextField txtNome, txtCpf, txtRg, txtEndereco, txtTelefone, txtPesquisa; // txtPesquisa adicionado
-    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; // btnPesquisar adicionado
+    private JTextField txtNome, txtCpf, txtRg, txtEndereco, txtTelefone, txtPesquisa; 
+    private JButton btnSalvar, btnEditar, btnExcluir, btnLimpar, btnPesquisar; 
     private JTable tabelaClientes;
     private DefaultTableModel modeloTabela;
 
-    // View conversa estritamente com o Controller correspondente
+    
     private ClienteController clienteController;
     private Cliente clienteSelecionado;
 
@@ -24,12 +24,12 @@ public class FormCliente extends JFrame {
         clienteController = new ClienteController();
 
         setTitle("Gerenciar Clientes (CRUD)");
-        setSize(750, 600); // Ajustado levemente na altura para acomodar a barra de busca
+        setSize(750, 600); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- PAINEL PRINCIPAL (Agrupa Formulário e Busca no Topo) ---
+        // --- PAINEL PRINCIPAL ---
         JPanel painelTopo = new JPanel();
         painelTopo.setLayout(new BoxLayout(painelTopo, BoxLayout.Y_AXIS));
 
@@ -46,7 +46,7 @@ public class FormCliente extends JFrame {
         txtEndereco = new JTextField(30);
         txtTelefone = new JTextField(15);
 
-        // Posicionando na Grid
+        
         gbc.gridx = 0; gbc.gridy = 0; painelCampos.add(new JLabel("Nome:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; painelCampos.add(txtNome, gbc);
 
@@ -83,7 +83,7 @@ public class FormCliente extends JFrame {
 
         painelTopo.add(painelCampos);
 
-        // --- NOVO: PAINEL DE PESQUISA ---
+        // --- PAINEL DE PESQUISA ---
         JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         painelBusca.setBorder(BorderFactory.createTitledBorder("Pesquisar Clientes"));
         txtPesquisa = new JTextField(30);
@@ -95,7 +95,7 @@ public class FormCliente extends JFrame {
 
         painelTopo.add(painelBusca);
 
-        // Adiciona todo o bloco superior no NORTH do BorderLayout
+        
         add(painelTopo, BorderLayout.NORTH);
 
         // --- 3. TABELA DE CLIENTES ---
@@ -113,7 +113,7 @@ public class FormCliente extends JFrame {
 
         // --- 4. EVENTOS E AÇÕES DOS BOTÕES ---
 
-        // Evento de clique na tabela para carregar o cliente selecionado do banco
+        
         tabelaClientes.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -140,7 +140,7 @@ public class FormCliente extends JFrame {
             }
         });
 
-        // Ação do Botão Salvar Novo
+        // Ação do Botão Salvar 
         btnSalvar.addActionListener(e -> {
             try {
                 Cliente c = new Cliente();
@@ -196,11 +196,11 @@ public class FormCliente extends JFrame {
             }
         });
 
-        // NOVO: Ação do Botão Pesquisar
+        // Ação do Botão Pesquisar
         btnPesquisar.addActionListener(e -> {
             String busca = txtPesquisa.getText().trim();
             try {
-                // Executa o método de filtragem mapeado no controller
+                
                 List<Cliente> resultado = clienteController.pesquisarPorNome(busca);
                 atualizarTabela(resultado);
             } catch (Exception ex) {
@@ -208,14 +208,14 @@ public class FormCliente extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Resetar e Atualizar a JTable graficamente
+        // Ação do Botão Limpar
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
             txtCpf.setText("");
             txtRg.setText("");
             txtEndereco.setText("");
             txtTelefone.setText("");
-            txtPesquisa.setText(""); // limpa o campo de busca
+            txtPesquisa.setText(""); 
             clienteSelecionado = null;
 
             btnSalvar.setEnabled(true);
@@ -230,11 +230,11 @@ public class FormCliente extends JFrame {
             }
         });
 
-        // Força a primeira carga na tabela e limpa campos ao abrir a tela
+        
         btnLimpar.doClick();
     }
 
-    // MÉTODO AUXILIAR PARA RECONSTRUIR AS LINHAS DA TABELA
+    
     private void atualizarTabela(List<Cliente> lista) {
         modeloTabela.setRowCount(0);
         for (Cliente c : lista) {

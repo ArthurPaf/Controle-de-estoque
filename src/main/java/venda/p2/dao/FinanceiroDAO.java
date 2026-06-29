@@ -43,17 +43,10 @@ public class FinanceiroDAO {
         }
     }
 
-    // =========================================================================
-    // MÉTODOS ADICIONADOS PARA FAZER A TELA DE PARCELAS FUNCIONAR
-    // =========================================================================
-
-    /**
-     * Busca todas as parcelas associadas a um Lançamento Financeiro específico.
-     */
+    
     public List<FinanceiroParcela> listarParcelasPorLancamento(int idFinanceiro) throws Exception {
         EntityManager em = GenericDAO.getEntityManager();
         try {
-            // Cria a consulta baseada exatamente na propriedade 'financeiro' da sua classe FinanceiroParcela
             return em.createQuery("SELECT p FROM FinanceiroParcela p WHERE p.financeiro.id = :idFin", FinanceiroParcela.class)
                      .setParameter("idFin", idFinanceiro)
                      .getResultList();
@@ -62,34 +55,29 @@ public class FinanceiroDAO {
         }
     }
 
-    /**
-     * Atualiza/Salva uma única parcela alterada na hora de dar baixa.
-     */
-    // =========================================================================
-    // MÉTODO DE FILTRAGEM DINÂMICA AJUSTADO
-    // =========================================================================
+    
     public List<Financeiro> buscarComFiltros(int fluxo, TipoConta tipoConta) throws Exception {
         EntityManager em = GenericDAO.getEntityManager();
         try {
-            // Começa com a consulta base trazendo tudo
+            
             StringBuilder jpql = new StringBuilder("SELECT f FROM Financeiro f WHERE 1=1");
 
-            // 1. Filtro por Fluxo: 1 para Pagar, 2 para Receber (0 é "TODOS", então ignora)
+            
             if (fluxo == 1 || fluxo == 2) {
                 jpql.append(" AND f.pagar_ou_receber = :fluxo");
             }
 
-            // 2. Filtro por Categoria/TipoConta (se não for nulo)
+            
             if (tipoConta != null) {
                 jpql.append(" AND f.tipoConta = :tipoConta");
             }
 
-            // Ordena para que os lançamentos mais recentes apareçam primeiro
+            
             jpql.append(" ORDER BY f.id DESC");
 
             var query = em.createQuery(jpql.toString(), Financeiro.class);
 
-            // Vincula os parâmetros se eles entrarem nos filtros acima
+            
             if (fluxo == 1 || fluxo == 2) {
                 query.setParameter("fluxo", fluxo);
             }

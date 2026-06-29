@@ -10,7 +10,7 @@ import java.util.List;
 public class GenericDAO<T> {
 
     private final Class<T> classe;
-    // Substitua "venda_p2_PU" pelo nome da sua Persistence Unit que está no seu persistence.xml
+    
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("siscom-pu");
 
     public GenericDAO(Class<T> classe) {
@@ -25,7 +25,7 @@ public class GenericDAO<T> {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
-            // O merge serve tanto para INSERT quanto para UPDATE no JPA
+            
             em.merge(entidade);
             em.getTransaction().commit();
         } catch (Exception e) {

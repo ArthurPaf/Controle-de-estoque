@@ -17,7 +17,6 @@ public class FormFormaPagamento extends JFrame {
     private JTable tabelaFormas;
     private DefaultTableModel modeloTabela;
 
-    // View agora conversa exclusivamente com o Controller específico
     private FormaPagamentoController formaController;
     private FormaPagamento formaSelecionada;
 
@@ -87,7 +86,6 @@ public class FormFormaPagamento extends JFrame {
 
         // --- EVENTOS E LISTENERS ---
 
-        // Evento de clique na JTable para recuperar a forma selecionada
         tabelaFormas.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -170,7 +168,7 @@ public class FormFormaPagamento extends JFrame {
             }
         });
 
-        // Ação do Botão Limpar / Atualizar Tabela Visualmente
+        // Ação do Botão Limpar
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
             txtParcelas.setText("1");
@@ -200,7 +198,7 @@ public class FormFormaPagamento extends JFrame {
             }
         });
 
-        // Dispara a carga inicial do JTable ao abrir o formulário
+        
         btnLimpar.doClick();
-    } // <-- Fim do construtor e fechamento absoluto da estrutura da classe!
+    } 
 }

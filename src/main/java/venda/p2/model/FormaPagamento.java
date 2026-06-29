@@ -13,7 +13,7 @@ public class FormaPagamento {
     private String nome;
     private int qtde_parcela;
     private int prazo;
-    private int avista_aprazo; // Ex: 1 para À Vista, 2 para A Prazo
+    private int avista_aprazo; 
 
     public FormaPagamento() {
     }

@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,7 +11,7 @@ import java.util.List;
 
 public class ProdutoController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA PRODUTO
+    
     private static final Logger logger = LogManager.getLogger(ProdutoController.class);
 
     private ProdutoDAO produtoDAO;

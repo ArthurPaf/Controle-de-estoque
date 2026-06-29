@@ -1,6 +1,5 @@
 package venda.p2.controller;
 
-// 1. IMPORTAÇÕES DOS LOGS ADICIONADAS
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 public class FornecedorController {
 
-    // 2. DECLARAÇÃO DO LOGGER ESPECÍFICO PARA FORNECEDOR
+    
     private static final Logger logger = LogManager.getLogger(FornecedorController.class);
 
     private FornecedorDAO fornecedorDAO;
@@ -84,7 +83,7 @@ public class FornecedorController {
         }
     }
 
-    // Adicione este método dentro da classe FornecedorController
+    
     public List<Fornecedor> pesquisarPorNome(String nome) throws Exception {
         logger.info("Método pesquisarPorNome() executado no FornecedorController. Termo: '{}'", nome);
         
